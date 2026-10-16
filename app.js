@@ -47,6 +47,7 @@ const P = {
   bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
   down:'<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>'
 };
 const ico = (n, cls = "ico") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
@@ -230,6 +231,11 @@ function route(){
   if (a === "cart") return renderCart();
   if (a === "orders" && b) return renderOrder(b);
   if (a === "orders") return renderOrders();
+  if (a === "claims") return renderClaims();
+  if (a === "users") return renderUsers();
+  if (a === "addresses") return renderAddresses();
+  if (a === "media") return renderMedia();
+  if (a === "help") return renderHelp();
   const stub = NAV.find(n => n.k === a);
   if (stub) return renderStub(stub);
   location.hash = "#/catalog";
@@ -410,7 +416,7 @@ const NAV = [
   {k:"home", t:"Главная", i:"home"},
   {k:"catalog", t:"Каталог", i:"catalog"},
   {k:"orders", t:"Заказы", i:"orders"},
-  {k:"shipments", t:"Отгрузки", i:"shipments"},
+  {k:"shipments", t:"Отгрузки", i:"shipments", hidden:true}, // скрыто до появления частичных отгрузок
   {k:"claims", t:"Рекламации", i:"claims"},
   {k:"users", t:"Пользователи", i:"users"},
   {k:"addresses", t:"Адреса доставки", i:"address"},
@@ -437,7 +443,7 @@ function shell(active, crumbs, html, opts = {}){
         <a href="#/home" aria-label="На главную"><img class="logo-b2b" src="assets/logo-b2b.svg" alt="HADAT B2B-портал"><img class="logo-sq" src="assets/favicon.svg" alt="HADAT"></a>
         <button class="close-btn" id="closeMenu" type="button" aria-label="Закрыть меню">${ico("close")}</button>
       </div>
-      <nav class="nav">${NAV.map(i => `<a href="#/${i.k}" ${i.k === active ? 'aria-current="page"' : ""} title="${i.t}">${ico(i.i)}<span>${i.t}</span></a>`).join("")}</nav>
+      <nav class="nav">${NAV.filter(i => !i.hidden).map(i => `<a href="#/${i.k}" ${i.k === active ? 'aria-current="page"' : ""} title="${i.t}">${ico(i.i)}<span>${i.t}</span></a>`).join("")}</nav>
       <div class="spacer"></div>
       <nav class="nav"><a href="#" id="logout" title="Выйти">${ico("logout")}<span>Выйти</span></a></nav>
     </aside>
@@ -795,7 +801,8 @@ function renderCart(){
         <div class="kv small"><span>Сумма по РРЦ</span><span class="num">${money(rrpT)}</span></div>
         <div class="kv"><span>Ваша выгода</span><b class="num">${money(rrpT - total)}</b></div>
         <p class="note">Скидка ${Math.round(g.disc * 100)}% уже учтена в ценах.</p>
-        <div class="field" style="margin-top:8px"><label for="comment">Комментарий к заказу</label><textarea class="input" id="comment" rows="3" placeholder="Адрес доставки, пожелания по отгрузке">${esc(store.get("hadat_b2b_comment") || "")}</textarea></div>
+        <div style="margin-top:8px">${addrSelectHtml()}</div>
+        <div class="field"><label for="comment">Комментарий к заказу</label><textarea class="input" id="comment" rows="3" placeholder="Пожелания по отгрузке">${esc(store.get("hadat_b2b_comment") || "")}</textarea></div>
         <button class="btn btn-green" id="send" type="button">Оформить заказ</button>
         <p class="note">После оформления менеджер подтвердит наличие и условия доставки.</p>
       </aside>
@@ -803,6 +810,7 @@ function renderCart(){
   bindSteppers($("#clines"), "k", () => renderCart());
   document.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { delete st.cart[b.dataset.rm]; saveCart(); renderCart() });
   $("#comment").oninput = e => store.set("hadat_b2b_comment", e.target.value);
+  bindAddrSelect();
   $("#send").onclick = () => sendOrder(cartLines());
   $("#clear").onclick = () => confirmDialog("Очистить корзину?", `Из корзины будут удалены все ${L.length} ${plural(L.length, "позиция", "позиции", "позиций")}. Это действие нельзя отменить.`, "Очистить", () => { st.cart = {}; saveCart(); renderCart() });
 }
@@ -972,14 +980,16 @@ async function renderOrder(id){
       </div>
     </div>
     <div class="tbl otable">
-      <div class="tbl-h"><span class="num">${o.lines.length} ${plural(o.lines.length, "позиция", "позиции", "позиций")} · ${units(o)} ед.</span><span style="text-align:right">Количество × цена</span><span>Сумма</span></div>
+      <div class="tbl-h"><span class="num">${o.lines.length} ${plural(o.lines.length, "позиция", "позиции", "позиций")} · ${units(o)} ед.</span><span style="text-align:right">Количество × цена</span><span>Сумма</span><span></span></div>
       ${o.lines.map(l => { const p = prodOf(l.pid); return `<div class="oline"${p ? ` data-row="${p.id}"` : ""}>
         <div class="im">${p?.img ? `<button type="button" data-open="${p.id}" aria-label="Карточка товара"><span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span></button>` : ""}</div>
         <div class="nm">${p ? `<button type="button" class="open-link" data-open="${p.id}">${esc(p.base)}, ${esc(p.vol)}</button>` : esc(l.title)}<span class="num">${esc(p?.sku || "")}</span></div>
         <div class="q num">${l.qty} × ${money(l.price)}</div>
-        <div class="s num">${money(l.sum)}</div></div>` }).join("") || `<div class="oline"><div></div><div class="hint">Позиции не найдены</div></div>`}
+        <div class="s num">${money(l.sum)}</div>
+        <div class="cl"><button type="button" class="claim-btn" data-claim="${esc(p ? p.base + ", " + p.vol : l.title)}" data-sku="${esc(p?.sku || "")}" data-max="${l.qty}">${ico("claims")}<span>Рекламация</span></button></div></div>` }).join("") || `<div class="oline"><div></div><div class="hint">Позиции не найдены</div></div>`}
     </div>`);
   document.querySelectorAll("[data-doc]").forEach(b => b.onclick = () => toast(`${b.dataset.doc}: в демо-версии документы не формируются`));
+  document.querySelectorAll("[data-claim]").forEach(b => b.onclick = e => { e.stopPropagation(); claimDialog(b.dataset.claim, b.dataset.sku, +b.dataset.max, orderNo(o.num)) });
   $("#repeat").onclick = () => {
     let added = 0, skipped = 0;
     for (const l of o.lines){ const p = prodOf(l.pid); if (!p || p.stock <= 0){ skipped++; continue }
@@ -990,9 +1000,230 @@ async function renderOrder(id){
   };
 }
 
+/* ============================================================
+   РАЗДЕЛЫ-МАКЕТЫ: рекламации, пользователи, адреса, медиа, справка
+   Статичная вёрстка без данных Airtable — плейсхолдеры.
+   ============================================================ */
+const DEMO_NOTE = "Демо: данные не сохраняются";
+const CLAIM_ST = {"Новая":"wait", "На рассмотрении":"rev", "Решена":"done"};
+const CLAIM_REASONS = ["Повреждена упаковка", "Протечка", "Сломан дозатор / помпа", "Пересорт", "Недовложение", "Истёк срок годности", "Другое"];
+const CLAIMS = [
+  {n:"РК-0014", order:"HD-000019", item:"Hydro Root Strengthening Shampoo, 800 мл", sku:"150002", qty:1, reason:"Сломан дозатор / помпа", st:"Новая", date:"2026-10-15"},
+  {n:"РК-0013", order:"HD-000019", item:"Hydro Root Strengthening Shampoo, 800 мл", sku:"150002", qty:1, reason:"Протечка", st:"Новая", date:"2026-10-15"},
+  {n:"РК-0012", order:"HD-000017", item:"Detox Therapy Scalp Scrub, 150 г", sku:"179000", qty:2, reason:"Повреждена упаковка", st:"На рассмотрении", date:"2026-10-09"},
+  {n:"РК-0011", order:"HD-000014", item:"Liquid Silk Oil, 60 мл", sku:"112529", qty:3, reason:"Недовложение", st:"На рассмотрении", date:"2026-10-02"},
+  {n:"РК-0010", order:"HD-000011", item:"Golden Hour Hair Mask, 280 мл", sku:"202402", qty:1, reason:"Пересорт", st:"Решена", date:"2026-09-12"},
+  {n:"РК-0009", order:"HD-000010", item:"Hydro Nutrient Nourishing Conditioner, 800 мл", sku:"112507", qty:2, reason:"Протечка", st:"Решена", date:"2026-08-30"}
+];
+const USERS = [
+  {name:"Алексей Семенов", email:"a.semenov@distr-test.example", api:false, st:"Активен", last:"Сегодня, 10:42", owner:true},
+  {name:"Мария Колесникова", email:"m.kolesnikova@distr-test.example", api:false, st:"Активен", last:"14.10.2026"},
+  {name:"Интеграция 1С", email:"1c-sync@distr-test.example", api:true, st:"Активен", last:"Сегодня, 06:00", key:"sk_live_•••• 7f3a"},
+  {name:"Игорь Лебедев", email:"i.lebedev@distr-test.example", api:false, st:"Приглашён", last:"—"}
+];
+const ADDRS = [
+  {name:"Основной склад", city:"Санкт-Петербург", addr:"ул. Складская, 12, корп. 3, ворота 4", who:"Алексей Семенов", tel:"+7 900 000-00-01", main:true, hours:"Пн–Пт 9:00–18:00"},
+  {name:"Шоурум на Невском", city:"Санкт-Петербург", addr:"Невский пр., 100, офис 15", who:"Мария Колесникова", tel:"+7 900 000-00-02", hours:"Ежедневно 11:00–20:00"},
+  {name:"Филиал Москва", city:"Москва", addr:"ул. Тестовая, 5, стр. 2", who:"Игорь Лебедев", tel:"+7 900 000-00-03", hours:"Пн–Сб 10:00–19:00"}
+];
+const MEDIA = [
+  {cat:"Каталоги", t:"Общий каталог Hadat 2026", f:"PDF", sz:"24 МБ", d:"01.10.2026"},
+  {cat:"Каталоги", t:"Прайс-лист для партнёров", f:"XLSX", sz:"180 КБ", d:"15.10.2026"},
+  {cat:"Каталоги", t:"Каталог новинок: Detox Therapy", f:"PDF", sz:"8 МБ", d:"20.09.2026"},
+  {cat:"Фото продукции", t:"Пэкшоты на белом фоне — все SKU", f:"ZIP", sz:"1,2 ГБ", d:"10.10.2026"},
+  {cat:"Фото продукции", t:"Лайфстайл-фото: Blonde Code", f:"ZIP", sz:"340 МБ", d:"05.10.2026"},
+  {cat:"Обучение", t:"Тренинг по линии Blonde Code", f:"PDF", sz:"6 МБ", d:"28.09.2026"},
+  {cat:"Обучение", t:"Видеоурок: протокол Hydro Spa", f:"MP4", sz:"620 МБ", d:"18.09.2026"},
+  {cat:"Рекламные материалы", t:"Баннеры для соцсетей — октябрь", f:"ZIP", sz:"95 МБ", d:"02.10.2026"},
+  {cat:"Рекламные материалы", t:"Макет листовки A5 для салона", f:"PDF", sz:"12 МБ", d:"22.09.2026"}
+];
+const FAQ = [
+  ["Заказы", [
+    ["Как оформить заказ?", "Откройте «Каталог», укажите количество у нужных объёмов и перейдите в «Корзину». Выберите адрес доставки, при необходимости добавьте комментарий и нажмите «Оформить заказ». Заказ появится в разделе «Заказы» со статусом «На согласовании»."],
+    ["Почему нельзя заказать больше, чем есть на складе?", "Заказы отгружаются только из наличия, поэтому количество ограничено текущим остатком. Если нужно больше, напишите менеджеру — он подскажет сроки поступления."],
+    ["Как повторить прошлый заказ?", "Откройте заказ в разделе «Заказы» и нажмите «Повторить заказ». Позиции в наличии добавятся в корзину, отсутствующие будут пропущены."],
+    ["Что означают статусы заказа?", "«На согласовании» — менеджер проверяет заказ. «Подтверждён» — заказ собирается или уже передан в доставку. «Доставлен» — заказ получен. «Отменён» — заказ не будет отгружен."]
+  ]],
+  ["Цены и оплата", [
+    ["Как рассчитывается моя цена?", "Цена партнёра — это РРЦ минус скидка вашей ценовой группы. В каталоге показана цена с НДС, ниже — без НДС и РРЦ для сравнения."],
+    ["Где взять счёт и накладную?", "На странице заказа есть кнопки «Счёт» и «Накладная». Документы формируются после подтверждения заказа менеджером."]
+  ]],
+  ["Доставка и рекламации", [
+    ["Как сохранить адрес доставки?", "При первом заказе укажите новый адрес — он сохранится и в следующий раз будет доступен в выпадающем списке. Все адреса можно редактировать в разделе «Адреса доставки»."],
+    ["Пришёл брак — что делать?", "Откройте заказ, найдите позицию и нажмите «Рекламация». Укажите количество и причину, приложите фото. По одной позиции можно создать несколько рекламаций, например отдельно на сломанную помпу и на протечку."],
+    ["Сколько рассматривается рекламация?", "Обычно до 3 рабочих дней. Статус обращения видно в разделе «Рекламации»."]
+  ]],
+  ["Доступ и пользователи", [
+    ["Как добавить сотрудника?", "В разделе «Пользователи» нажмите «Пригласить», укажите имя, email и тип доступа. Сотрудник получит письмо со ссылкой для входа."],
+    ["Чем отличается доступ к API?", "Обычный пользователь работает в кабинете через браузер. Доступ к API нужен для интеграции с вашей учётной системой: остатки, цены и заказы передаются автоматически по ключу."]
+  ]]
+];
+const dateShort = s => { const d = new Date(s); return isNaN(d) ? s : d.toLocaleDateString("ru-RU") };
+const mockFoot = `<p class="mock-note">${ico("info")} Раздел в демо-режиме: показаны примерные данные, изменения не сохраняются.</p>`;
+
+function formDialog(title, body, ok, onOk, wide){
+  const d = document.createElement("div"); d.className = "dialog-bg";
+  d.innerHTML = `<form class="dialog${wide ? " wide" : ""}" role="dialog" aria-modal="true" aria-labelledby="fdH">
+    <div class="dlg-top"><h2 class="h-display" id="fdH">${esc(title)}</h2><button type="button" class="pm-x" data-x aria-label="Закрыть">${ico("close")}</button></div>
+    ${body}
+    <div class="acts"><button class="btn btn-line" type="button" data-x>Отмена</button><button class="btn btn-green" type="submit">${esc(ok)}</button></div></form>`;
+  document.body.append(d); document.body.style.overflow = "hidden";
+  const close = () => { d.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", onKey) };
+  const onKey = e => { if (e.key === "Escape") close() };
+  document.addEventListener("keydown", onKey);
+  d.onclick = e => { if (e.target === d) close() };
+  d.querySelectorAll("[data-x]").forEach(b => b.onclick = close);
+  d.querySelector("form").onsubmit = e => { e.preventDefault(); close(); (onOk || (() => toast(DEMO_NOTE)))() };
+  setTimeout(() => d.querySelector("input,select,textarea")?.focus(), 30);
+  return d;
+}
+
+/* ---------- рекламации ---------- */
+function claimDialog(item, sku, max, orderNo){
+  formDialog("Рекламация", `
+    <div class="dlg-item"><b>${esc(item)}</b><span class="num">${esc(sku)}${orderNo ? " · заказ " + esc(orderNo) : ""}${max ? " · в заказе " + max + " ед." : ""}</span></div>
+    <div class="claim-grid">
+      <div class="field"><label for="c_qty">Количество, ед.</label><input class="input num" id="c_qty" type="number" min="1" ${max ? `max="${max}"` : ""} value="1" required></div>
+      <div class="field"><label for="c_reason">Причина</label><select class="input" id="c_reason" required>${CLAIM_REASONS.map(r => `<option>${esc(r)}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label for="c_comment">Комментарий</label><textarea class="input" id="c_comment" rows="3" placeholder="Опишите, что случилось с товаром"></textarea></div>
+    <label class="upload">${ico("media")}<span><b>Приложить фото</b><small>JPG или PNG, до 10 МБ</small></span><input type="file" accept="image/*" multiple></label>
+    <p class="hint">По одной позиции можно создать несколько рекламаций — например, отдельно на сломанную помпу и на протечку.</p>`,
+    "Отправить рекламацию", () => toast("Рекламация создана (демо: не сохраняется)"), true);
+}
+function renderClaims(){
+  const f = st.cf ||= {tab:"", q:""};
+  shell("claims", [["Главная", "#/home"], ["Рекламации"]], `
+    <div class="page-head"><h1 class="h-display">Рекламации</h1><span class="meta">Открытых: ${CLAIMS.filter(c => c.st !== "Решена").length}</span></div>
+    <p class="lead-note">Рекламация создаётся на позицию заказа: откройте заказ и нажмите «Рекламация» у нужного товара.</p>
+    <div class="chiprow" role="group" aria-label="Статус">${["", "Новая", "На рассмотрении", "Решена"].map(t => `<button type="button" class="chip" data-ct="${t}" aria-pressed="${f.tab === t}">${t || "Все"}</button>`).join("")}</div>
+    <div class="toolbar"><div class="search">${ico("search")}<input class="input" type="search" id="cq" placeholder="№ рекламации, заказа или товар" value="${esc(f.q)}" aria-label="Поиск рекламаций"></div></div>
+    <div id="clist"></div>${mockFoot}`);
+  const draw = () => {
+    const q = f.q.trim().toLowerCase();
+    const L = CLAIMS.filter(c => (!f.tab || c.st === f.tab) && (!q || [c.n, c.order, c.item, c.sku].join(" ").toLowerCase().includes(q)));
+    $("#clist").innerHTML = L.length ? `<div class="mtbl claims">
+      <div class="mtbl-h"><span>Рекламация</span><span>Заказ · позиция</span><span>Кол-во</span><span>Причина</span><span>Статус</span></div>
+      ${L.map(c => `<div class="mrow"><div class="c-n"><b class="num">${c.n}</b><span class="num">${dateShort(c.date)}</span></div>
+        <div class="c-item"><a href="#/orders" class="num">${c.order}</a><span>${esc(c.item)} <i class="num">${c.sku}</i></span></div>
+        <div class="c-q num">${c.qty} ед.</div><div class="c-r">${esc(c.reason)}</div>
+        <div class="c-s"><span class="pill ${CLAIM_ST[c.st]}">${c.st}</span></div></div>`).join("")}</div>`
+      : `<div class="empty">${ico("claims")}<h2 class="h-display">${f.q || f.tab ? "Ничего не найдено" : "Рекламаций пока нет"}</h2><p>${f.q || f.tab ? "Измените фильтр или поисковый запрос." : "Если в заказе пришёл брак, откройте заказ и создайте рекламацию на нужную позицию."}</p>${f.q || f.tab ? `<button class="btn btn-line" id="creset" type="button">Сбросить фильтры</button>` : `<a class="btn btn-line" href="#/orders">Перейти к заказам</a>`}</div>`;
+    $("#creset") && ($("#creset").onclick = () => { f.tab = ""; f.q = ""; renderClaims() });
+  };
+  document.querySelectorAll("[data-ct]").forEach(b => b.onclick = () => { f.tab = b.dataset.ct; document.querySelectorAll("[data-ct]").forEach(x => x.setAttribute("aria-pressed", x === b)); draw() });
+  $("#cq").oninput = e => { f.q = e.target.value; draw() };
+  draw();
+}
+
+/* ---------- пользователи ---------- */
+function renderUsers(){
+  shell("users", [["Главная", "#/home"], ["Пользователи"]], `
+    <div class="page-head"><h1 class="h-display">Пользователи</h1><button class="btn btn-green" id="invite" type="button">${ico("plus")} Пригласить</button></div>
+    <div class="u-types">
+      <div><span class="tag user">Пользователь</span><p>Работает в кабинете через браузер: каталог, заказы, рекламации.</p></div>
+      <div><span class="tag api">API</span><p>Доступ по ключу для интеграции с учётной системой: остатки, цены, заказы.</p></div>
+    </div>
+    <div class="mtbl users">
+      <div class="mtbl-h"><span>Сотрудник</span><span>Тип доступа</span><span>Статус</span><span>Последний вход</span><span></span></div>
+      ${USERS.map(u => `<div class="mrow"><div class="u-who"><span class="ava">${u.api ? ico("users") : initials(u.name)}</span><span><b>${esc(u.name)}${u.owner ? ` <small>(вы)</small>` : ""}</b><span>${esc(u.email)}</span>${u.key ? `<span class="num key">Ключ ${esc(u.key)}</span>` : ""}</span></div>
+        <div class="u-t"><span class="tag ${u.api ? "api" : "user"}">${u.api ? "API" : "Пользователь"}</span></div>
+        <div class="u-s"><span class="pill ${u.st === "Активен" ? "ok" : "wait"}">${u.st}</span></div>
+        <div class="u-l num">${esc(u.last)}</div>
+        <div class="u-a">${u.owner ? "" : `<button type="button" class="link-btn" data-demo>${u.st === "Приглашён" ? "Отправить ещё раз" : "Изменить"}</button>`}</div></div>`).join("")}
+    </div>${mockFoot}`);
+  $("#invite").onclick = () => formDialog("Пригласить пользователя", `
+    <div class="field"><label for="i_name">Имя и фамилия</label><input class="input" id="i_name" required></div>
+    <div class="field"><label for="i_mail">Рабочий email</label><input class="input" id="i_mail" type="email" required></div>
+    <fieldset class="radio-cards"><legend>Тип доступа</legend>
+      <label><input type="radio" name="i_t" checked><span><b>Пользователь</b><small>Вход в кабинет через браузер</small></span></label>
+      <label><input type="radio" name="i_t"><span><b>API</b><small>Ключ для интеграции с учётной системой</small></span></label>
+    </fieldset>`, "Отправить приглашение", () => toast("Приглашение отправлено (демо)"));
+  document.querySelectorAll("[data-demo]").forEach(b => b.onclick = () => toast(DEMO_NOTE));
+}
+
+/* ---------- адреса ---------- */
+function addrForm(a = {}){
+  return `<div class="field"><label for="ad_n">Название точки</label><input class="input" id="ad_n" value="${esc(a.name || "")}" placeholder="Например, склад или салон" required></div>
+    <div class="grid2"><div class="field"><label for="ad_c">Город</label><input class="input" id="ad_c" value="${esc(a.city || "")}" required></div>
+    <div class="field"><label for="ad_h">Часы приёмки</label><input class="input" id="ad_h" value="${esc(a.hours || "")}" placeholder="Пн–Пт 9:00–18:00"></div></div>
+    <div class="field"><label for="ad_a">Адрес</label><input class="input" id="ad_a" value="${esc(a.addr || "")}" placeholder="Улица, дом, корпус, офис" required></div>
+    <div class="grid2"><div class="field"><label for="ad_w">Контактное лицо</label><input class="input" id="ad_w" value="${esc(a.who || "")}"></div>
+    <div class="field"><label for="ad_t">Телефон</label><input class="input" id="ad_t" type="tel" value="${esc(a.tel || "")}"></div></div>
+    <label class="check"><input type="checkbox" ${a.main ? "checked" : ""}> Основной адрес</label>`;
+}
+function renderAddresses(){
+  shell("addresses", [["Главная", "#/home"], ["Адреса доставки"]], `
+    <div class="page-head"><h1 class="h-display">Адреса доставки</h1><button class="btn btn-green" id="addA" type="button">${ico("plus")} Добавить адрес</button></div>
+    <p class="lead-note">Адрес сохраняется при первом заказе и дальше выбирается из списка в корзине.</p>
+    <div class="addr-grid">
+      ${ADDRS.map((a, i) => `<article class="addr">
+        <div class="addr-h"><b>${esc(a.name)}</b>${a.main ? `<span class="tag user">Основной</span>` : ""}</div>
+        <p>${esc(a.city)}, ${esc(a.addr)}</p>
+        <dl><dt>Контакт</dt><dd>${esc(a.who)}, <span class="num nowrap">${esc(a.tel)}</span></dd><dt>Приёмка</dt><dd>${esc(a.hours)}</dd></dl>
+        <div class="addr-a"><button type="button" class="link-btn" data-ed="${i}">Редактировать</button>${a.main ? "" : `<button type="button" class="link-btn" data-demo>Сделать основным</button>`}</div>
+      </article>`).join("")}
+      <button type="button" class="addr add" id="addA2">${ico("plus")}<span>Новый адрес</span></button>
+    </div>${mockFoot}`);
+  const add = () => formDialog("Новый адрес", addrForm(), "Сохранить адрес", null, true);
+  $("#addA").onclick = add; $("#addA2").onclick = add;
+  document.querySelectorAll("[data-ed]").forEach(b => b.onclick = () => formDialog("Редактировать адрес", addrForm(ADDRS[+b.dataset.ed]), "Сохранить", null, true));
+  document.querySelectorAll("[data-demo]").forEach(b => b.onclick = () => toast(DEMO_NOTE));
+}
+function addrSelectHtml(){
+  return `<div class="field"><label for="addrSel">Адрес доставки</label><select class="input" id="addrSel">
+    ${ADDRS.map((a, i) => `<option value="${i}" ${a.main ? "selected" : ""}>${esc(a.name)} — ${esc(a.city)}, ${esc(a.addr)}</option>`).join("")}
+    <option value="new">+ Новый адрес…</option></select>
+    <div id="addrNew" class="addr-new" hidden>
+      <input class="input" placeholder="Город" aria-label="Город"><input class="input" placeholder="Улица, дом, офис" aria-label="Адрес">
+      <span class="hint">Адрес сохранится для следующих заказов.</span></div></div>`;
+}
+function bindAddrSelect(){ const s = $("#addrSel"); if (s) s.onchange = () => { $("#addrNew").hidden = s.value !== "new" } }
+
+/* ---------- медиа ---------- */
+function renderMedia(){
+  const f = st.mf ||= {cat:""};
+  const cats = [...new Set(MEDIA.map(m => m.cat))];
+  shell("media", [["Главная", "#/home"], ["Медиа"]], `
+    <div class="page-head"><h1 class="h-display">Медиа</h1><span class="meta">Материалы для работы с брендом</span></div>
+    <div class="chiprow" role="group" aria-label="Раздел">${["", ...cats].map(c => `<button type="button" class="chip" data-mc="${esc(c)}" aria-pressed="${f.cat === c}">${esc(c || "Все")}</button>`).join("")}</div>
+    <div class="media-grid" id="mgrid"></div>${mockFoot}`);
+  const draw = () => {
+    $("#mgrid").innerHTML = MEDIA.filter(m => !f.cat || m.cat === f.cat).map(m => `<article class="mcard">
+      <div class="mtype t-${m.f.toLowerCase()}">${m.f}</div>
+      <div class="mbody"><span class="eyebrow">${esc(m.cat)}</span><b>${esc(m.t)}</b><span class="num">${m.f} · ${m.sz} · обновлено ${m.d}</span></div>
+      <button type="button" class="btn btn-line btn-sm" data-dl>${ico("down")} Скачать</button></article>`).join("");
+    document.querySelectorAll("[data-dl]").forEach(b => b.onclick = () => toast("Демо: файл не скачивается"));
+  };
+  document.querySelectorAll("[data-mc]").forEach(b => b.onclick = () => { f.cat = b.dataset.mc; document.querySelectorAll("[data-mc]").forEach(x => x.setAttribute("aria-pressed", x === b)); draw() });
+  draw();
+}
+
+/* ---------- справка ---------- */
+function renderHelp(){
+  shell("help", [["Главная", "#/home"], ["Справка"]], `
+    <div class="page-head"><h1 class="h-display">Справка</h1></div>
+    <div class="toolbar"><div class="search">${ico("search")}<input class="input" type="search" id="hq" placeholder="Поиск по вопросам" aria-label="Поиск по справке"></div></div>
+    <div class="help-layout">
+      <div id="faq">${FAQ.map(([sec, qs]) => `<section class="faq-sec"><h2 class="eyebrow">${esc(sec)}</h2>${qs.map(([q, a]) => `<details class="faq"><summary>${esc(q)}${ico("expand")}</summary><p>${esc(a)}</p></details>`).join("")}</section>`).join("")}
+        <div class="empty" id="faqEmpty" hidden>${ico("help")}<h2 class="h-display">Ничего не найдено</h2><p>Попробуйте другую формулировку или напишите менеджеру.</p></div></div>
+      <aside class="help-card"><span class="eyebrow">Не нашли ответ?</span><b>Ваш менеджер</b><p>Ответим в рабочее время в течение часа.</p>
+        <a class="link-btn" href="mailto:b2b@hadat.ru">b2b@hadat.ru</a><span class="num">+7 (800) 000-00-00</span>
+        <button type="button" class="btn btn-brown" id="helpChat">Написать в мессенджер</button></aside>
+    </div>`);
+  $("#hq").oninput = e => {
+    const q = e.target.value.trim().toLowerCase(); let any = false;
+    document.querySelectorAll(".faq-sec").forEach(s => { let v = false;
+      s.querySelectorAll(".faq").forEach(d => { const ok = !q || d.textContent.toLowerCase().includes(q); d.hidden = !ok; if (ok) v = true; if (q && ok) d.open = true });
+      s.hidden = !v; if (v) any = true });
+    $("#faqEmpty").hidden = any;
+  };
+  $("#helpChat").onclick = e => { e.stopPropagation(); $("#chatBtn")?.click() };
+}
+
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-open]"); if (b){ e.preventDefault(); return openProduct(b.dataset.open) }
-  if (e.target.closest(".stw,.vsum,[data-tip],.ptot")) return;
+  if (e.target.closest(".stw,.vsum,[data-tip],.ptot,[data-claim]")) return;
   const row = e.target.closest(".vrow[data-row],.oline[data-row]"); if (row) return openProduct(row.dataset.row);
   const hd = e.target.closest(".pcard-h"); if (hd){ const l = hd.querySelector("[data-open]"); if (l) openProduct(l.dataset.open) }
 });
