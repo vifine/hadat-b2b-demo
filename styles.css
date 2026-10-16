@@ -430,13 +430,15 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .promo-dots{display:none;justify-content:center;gap:8px;margin-top:12px}
 .promo-dots button{width:8px;height:8px;border-radius:50%;background:var(--border)}
 .promo-dots button[aria-current="true"]{background:var(--brown);width:20px;border-radius:4px}
-@media (max-width:1000px){
-  .promos-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
+.promos{container-type:inline-size}
+@container (max-width:1060px){
+  .promos-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;scrollbar-width:none}
   .promos-track::-webkit-scrollbar{display:none}
-  .promo-card{flex:0 0 100%;scroll-snap-align:start}
+  .promo-card{flex:0 0 calc(50% - 6px);scroll-snap-align:start}
   .promo-dots{display:flex}
 }
-@media (max-width:1000px) and (min-width:861px){.promo-card{flex-basis:calc(50% - 6px)}}
+@container (max-width:620px){.promo-card{flex-basis:100%}}
+@media (max-width:860px){.promos-track{margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}}
 .home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:8px}
 .tile{background:var(--beige-100);border-radius:6px;padding:20px;display:grid;gap:8px;text-decoration:none}
 .tile:hover{background:#ECE6DF}
@@ -514,9 +516,9 @@ button.im{display:block}
 
 /* home tiles with icons */
 .tile{position:relative;padding:20px 20px 20px 84px;min-height:110px}
-.tile-ic{position:absolute;left:20px;top:20px;width:48px;height:48px;border-radius:12px;background:var(--lb300);display:grid;place-items:center;color:var(--text)}
-.tile:nth-child(2) .tile-ic{background:var(--beige)}
-.tile:nth-child(3) .tile-ic{background:var(--brown);color:var(--beige-photo)}
+.tile-ic{position:absolute;left:20px;top:20px;width:48px;height:48px;border-radius:12px;background:var(--lb200);display:grid;place-items:center;color:var(--text)}
+.tile:nth-child(2) .tile-ic{background:var(--beige-photo)}
+.tile:nth-child(3) .tile-ic{background:var(--st-done-bg)}
 .tile-go{position:absolute;right:18px;top:20px;color:var(--text-2);transition:transform .15s}
 .tile:hover .tile-go{transform:translateX(4px)}
 /* notifications */
