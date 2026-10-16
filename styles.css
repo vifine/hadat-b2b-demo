@@ -191,6 +191,8 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
   .shell.menu-open .scrim{display:block;position:fixed;inset:0;background:rgba(29,29,27,.25);z-index:15}
   .side-top .collapse-btn{display:none}
   .side-top .close-btn{display:grid!important}
+  .side-top>a{display:none}
+  .side-top{justify-content:flex-end;margin-bottom:12px}
   .topbar{height:56px;padding:0 16px;gap:18px}
   .crumbs,.who-wrap,.tb-link .t,.tb-sum{display:none}
   .tb-logo{display:block!important;margin-right:auto}
