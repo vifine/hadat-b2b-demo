@@ -61,7 +61,7 @@ const $ = s => document.querySelector(s);
 const root = $("#root");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const r2 = n => Math.round((+n || 0) * 100) / 100;
-const money = n => { n = r2(n); return n.toLocaleString("ru-RU", {minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2}) + " ₽" };
+const money = n => { n = r2(n); return n.toLocaleString("ru-RU", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " ₽" };
 const sel = v => v && typeof v === "object" && !Array.isArray(v) ? (v.name ?? "") : (v ?? "");
 const ids = v => Array.isArray(v) ? v.map(x => typeof x === "string" ? x : x?.id).filter(Boolean) : [];
 const store = {get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
