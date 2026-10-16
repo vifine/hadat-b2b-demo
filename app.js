@@ -77,7 +77,7 @@ function toast(msg){ const t = document.createElement("div"); t.className = "toa
 const st = {
   products:[], groups:{}, clients:[], client:null,
   cart:{}, orders:null, lines:null,
-  f:{q:"", type:"", line:"", inStock:false, sort:"sku"},
+  f:{q:"", type:"", line:"", inStock:false, isNew:false, sort:"sku"},
   of:{tab:"all", q:""},
   collapsed: !!store.get("hadat_side_collapsed"),
   applied:null
@@ -179,7 +179,7 @@ function route(){
     if (a === "applied") return renderApplied();
     return renderLogin();
   }
-  if (pub.includes(a) || !a) { location.hash = "#/catalog"; return }
+  if (pub.includes(a) || !a) { location.hash = "#/home"; return }
   closeMenu();
   if (a === "home") return renderHome();
   if (a === "catalog") return renderCatalog();
@@ -285,7 +285,7 @@ function renderLogin(){
       if (!u.f[U.active]) throw {msg:"Учётная запись отключена. Обратитесь к менеджеру Hadat."};
       const c = st.clients.find(x => x.id === ids(u.f[U.client])[0]);
       if (!c || c.access !== "Одобрен") throw {msg:"Доступ компании ещё не одобрен."};
-      setClient(c); go("#/catalog");
+      setClient(c); go("#/home");
     } catch(e){
       b.disabled = false; b.textContent = "Войти";
       err.textContent = e.msg || errText(e); err.hidden = false;
@@ -429,6 +429,14 @@ function updateTopCart(){
 function renderHome(){
   const L = cartLines(), n = L.reduce((s, x) => s + x.q, 0);
   shell("home", [["Главная"]], `
+    <section class="promo" aria-label="Новинка">
+      <div class="promo-txt">
+        <span class="promo-eyebrow">Новинка${newCount() ? ` · ещё ${newCount()} ${plural(newCount(), "новинка", "новинки", "новинок")} в каталоге` : ""}</span>
+        <h2 class="h-display">Hair Discipline<br>Style Primer 5-in-1</h2>
+        <p>Праймер для укладки: укрощает пушистость, даёт эластичную фиксацию, защищает от нагрева до 180&nbsp;°C, добавляет блеск и ухаживает. 130 мл.</p>
+        <div class="promo-cta"><a class="btn promo-btn" href="#/catalog" id="toNew">Смотреть новинки</a><span class="promo-soon">Праймер — скоро в каталоге</span></div>
+      </div>
+    </section>
     <div class="page-head"><h1 class="h-display">Здравствуйте, ${esc((st.client.contact || "").split(" ")[0] || "партнёр")}</h1></div>
     <p style="margin:0 0 8px;color:var(--text-2)">${esc(st.client.company)} · ценовая группа «${esc(grp().name)}», скидка ${Math.round(grp().disc * 100)}% от РРЦ</p>
     <div class="home-grid">
@@ -436,7 +444,9 @@ function renderHome(){
       <a class="tile" href="#/cart"><span class="eyebrow">Корзина</span><b class="num">${n ? money(cartTotal()) : "Пусто"}</b><span>${n ? `${L.length} ${plural(L.length, "позиция", "позиции", "позиций")} · ${n} ед.` : "Добавьте товары из каталога"}</span></a>
       <a class="tile" href="#/orders"><span class="eyebrow">Заказы</span><b>История</b><span>Статусы, суммы и состав заказов</span></a>
     </div>`);
+  $("#toNew").onclick = e => { e.preventDefault(); st.f = {...st.f, q:"", type:"", line:"", isNew:true}; go("#/catalog") };
 }
+function newCount(){ return new Set(st.products.filter(p => p.status === "Новинка").map(p => p.base)).size }
 function renderStub(n){
   shell(n.k, [["Главная", "#/home"], [n.t]], `
     <div class="page-head"><h1 class="h-display">${esc(n.t)}</h1></div>
@@ -453,7 +463,7 @@ function stockPill(p){
 }
 function filtered(){
   const f = st.f, q = f.q.trim().toLowerCase();
-  return st.products.filter(p => (!f.type || p.type === f.type) && (!f.line || p.line === f.line) && (!f.inStock || p.stock > 0) &&
+  return st.products.filter(p => (!f.type || p.type === f.type) && (!f.line || p.line === f.line) && (!f.inStock || p.stock > 0) && (!f.isNew || p.status === "Новинка") &&
     (!q || (p.name + " " + p.sku + " " + p.ean).toLowerCase().includes(q)));
 }
 function groupsOf(list){
@@ -470,6 +480,7 @@ function renderCatalog(){
     <div class="toolbar">
       <div class="search">${ico("search")}<input class="input" type="search" id="q" placeholder="Название или артикул" value="${esc(st.f.q)}" aria-label="Поиск по каталогу"></div>
       <label class="check"><input type="checkbox" id="inStock" ${st.f.inStock ? "checked" : ""}> Только в наличии</label>
+      <label class="check"><input type="checkbox" id="isNew" ${st.f.isNew ? "checked" : ""}> Новинки</label>
       <div class="meta"><span>${esc(grp().name)} · скидка <b class="num">${Math.round(grp().disc * 100)}%</b></span><span id="cnt" class="num"></span>
         <select class="input" id="sort" style="height:32px;width:auto;font-size:13px" aria-label="Сортировка"><option value="sku" ${st.f.sort === "sku" ? "selected" : ""}>По артикулу</option><option value="name" ${st.f.sort === "name" ? "selected" : ""}>По названию</option></select></div>
     </div>
@@ -479,6 +490,7 @@ function renderCatalog(){
     <div id="cards"></div>`);
   $("#q").oninput = e => { st.f.q = e.target.value; drawCards() };
   $("#inStock").onchange = e => { st.f.inStock = e.target.checked; drawCards() };
+  $("#isNew").onchange = e => { st.f.isNew = e.target.checked; drawCards() };
   $("#sort").onchange = e => { st.f.sort = e.target.value; drawCards() };
   document.querySelectorAll("[data-type],[data-line]").forEach(b => b.onclick = () => {
     const k = b.dataset.type !== undefined ? "type" : "line";
@@ -516,7 +528,7 @@ function drawCards(){
   $("#cnt").textContent = `${G.length} ${plural(G.length, "товар", "товара", "товаров")} · ${list.length} ${plural(list.length, "вариация", "вариации", "вариаций")}${units ? ` · ${units} ед. в корзине` : ""}`;
   const box = $("#cards");
   if (!G.length){ box.innerHTML = `<div class="empty">${ico("search")}<h2 class="h-display">Ничего не найдено</h2><p>Измените поиск или сбросьте фильтры.</p><button class="btn btn-line" id="reset" type="button">Сбросить фильтры</button></div>`;
-    $("#reset").onclick = () => { st.f = {...st.f, q:"", type:"", line:"", inStock:false}; renderCatalog() }; return }
+    $("#reset").onclick = () => { st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false}; renderCatalog() }; return }
   box.innerHTML = G.map(g => `<section class="pcard">
     <div class="pcard-h"><h3>${esc(g.base)}</h3><span class="ptot num" data-ptot="${esc(g.base)}">${ptotHtml(g.base)}</span></div>
     ${g.vs.map(vrowHtml).join("")}</section>`).join("");
