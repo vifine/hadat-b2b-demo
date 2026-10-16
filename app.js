@@ -460,6 +460,9 @@ const PROMOS = [
   {img:"assets/promo-calm.jpg", alt:"Уход за телом Calm", bg:"#3b2e27", eyebrow:"Уход за телом", title:"Calm Body Care", text:"Очищение, увлажнение и комфорт кожи тела и рук с премиальной ароматикой.", cta:"Смотреть уход за телом", filter:{line:"Body"}}
 ];
 let promoTimer = null;
+/* товары из баннеров на главной помечаем «Новинка» */
+const isPromo = p => p.line === "Detox Therapy" || /^(Calm|Hair Discipline)\b/i.test(p.base);
+const newBadge = p => isPromo(p) ? `<span class="new-b">Новинка</span>` : "";
 function initPromoSlider(){
   clearInterval(promoTimer);
   const tr = $("#promoTrack"), dots = [...document.querySelectorAll("[data-dot]")];
@@ -565,7 +568,7 @@ function drawCards(){
   if (!G.length){ box.innerHTML = `<div class="empty">${ico("search")}<h2 class="h-display">Ничего не найдено</h2><p>Измените поиск или сбросьте фильтры.</p><button class="btn btn-line" id="reset" type="button">Сбросить фильтры</button></div>`;
     $("#reset").onclick = () => { st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false}; renderCatalog() }; return }
   box.innerHTML = G.map(g => `<section class="pcard">
-    <div class="pcard-h"><h3><button type="button" class="open-link" data-open="${g.vs[0].id}">${esc(g.base)}</button></h3><span class="ptot num" data-ptot="${esc(g.base)}">${ptotHtml(g.base)}</span></div>
+    <div class="pcard-h"><h3><button type="button" class="open-link" data-open="${g.vs[0].id}">${esc(g.base)}</button>${newBadge(g.vs[0])}</h3><span class="ptot num" data-ptot="${esc(g.base)}">${ptotHtml(g.base)}</span></div>
     ${g.vs.map(vrowHtml).join("")}</section>`).join("");
   bindSteppers(box, "c", p => refreshRow(p));
   box.querySelectorAll("[data-tip]").forEach(b => b.onclick = e => { e.stopPropagation(); showTip(b, st.products.find(x => x.id === b.dataset.tip)) });
@@ -648,7 +651,7 @@ async function openProduct(id){
         <div class="pm-photo">${p.img ? `<img src="${esc(p.img)}" alt="">` : ""}</div>
         <div class="pm-main">
           <div class="pm-top"><span class="pm-eyebrow">${esc(p.line)} · ${esc(p.type)}</span><button class="pm-x" type="button" aria-label="Закрыть">${ico("close")}</button></div>
-          <h2 id="pmTitle">${esc(p.base)}</h2>
+          <h2 id="pmTitle">${esc(p.base)}${newBadge(p)}</h2>
           ${lead ? `<p class="pm-lead">${esc(lead)}</p>` : ""}
           <p class="pm-meta num">SKU ${esc(p.sku)}${p.status ? " · " + esc(p.status) : ""}${r.country ? " · Страна производства: " + esc(r.country) : ""}</p>
           <div class="pm-vols">${vars.map(v => `<button type="button" class="chip" data-var="${v.id}" aria-pressed="${v.id === p.id}">${esc(v.vol)}</button>`).join("")}${stockPill(p)}</div>
