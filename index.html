@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Hadat B2B Портал</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+/* Layout: шапка с логотипом и клиентом → вкладки (Каталог / Корзина / Заказы) → сетка карточек; палитра из бренд-платформы Hadat (пудра, тауп, пыльно-голубой) */
+:root{
+  --bg:#F4EEEB; --surface:#FBF8F6; --line:#E3D6CF; --taupe:#CDB8AE;
+  --ink:#2E2826; --muted:#7A6D67; --blue:#5E86A1; --blue-soft:#DCE7EE;
+  --ok:#3F7F5C; --ok-soft:#DDEDE3; --warn:#9A6A1E; --warn-soft:#F3E6CF; --bad:#A0473F; --bad-soft:#F3DCD8;
+  --display:"Cormorant Garamond", "Times New Roman", serif;
+  --body:"Jost", "Helvetica Neue", Arial, sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1D1A19; --surface:#262220; --line:#3A3330; --taupe:#5A4C46;
+  --ink:#F1EAE6; --muted:#AC9E97; --blue:#93B5CC; --blue-soft:#2A3741;
+  --ok:#7FC39C; --ok-soft:#203229; --warn:#E0B26A; --warn-soft:#3A2F1E; --bad:#E59288; --bad-soft:#3D2522; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1D1A19; --surface:#262220; --line:#3A3330; --taupe:#5A4C46;
+  --ink:#F1EAE6; --muted:#AC9E97; --blue:#93B5CC; --blue-soft:#2A3741;
+  --ok:#7FC39C; --ok-soft:#203229; --warn:#E0B26A; --warn-soft:#3A2F1E; --bad:#E59288; --bad-soft:#3D2522; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.logo b{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:.32em}
+.logo span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.who{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);min-width:0}
+.who strong{color:var(--ink);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.link{background:none;border:0;padding:0;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+nav{display:flex;gap:4px;padding-bottom:0;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+nav button[aria-current="page"]{color:var(--ink);border-color:var(--ink)}
+.badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--ink);color:var(--surface);font-size:11px;margin-left:6px;letter-spacing:0}
+
+main{padding-block:24px 64px}
+h1,h2{font-family:var(--display);font-weight:500;letter-spacing:.06em;text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,4vw,34px)}
+h2{font-size:22px}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.note{font-size:12px;color:var(--muted)}
+
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--surface);border-radius:999px;padding:10px 20px;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.small{padding:7px 14px;font-size:12px}
+
+/* banners */
+.banner{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.banner.bad{border-color:var(--bad);background:var(--bad-soft)}
+.banner.ok{border-color:var(--ok);background:var(--ok-soft)}
+.banner p{margin:0;flex:1;min-width:220px}
+
+/* login */
+.login{max-width:520px;margin:6vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:32px 28px;display:grid;gap:18px}
+.login .mark{font-family:var(--display);font-size:40px;letter-spacing:.32em;font-weight:600;text-align:center}
+.field{display:grid;gap:6px}
+.field label{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px;width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+
+/* catalog */
+.cat-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.terms{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.terms b{color:var(--ink);font-weight:500}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters input[type=search],.filters select{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 14px;min-width:0}
+.filters input[type=search]{flex:1 1 220px}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden}
+.ph{aspect-ratio:1/1;max-width:100%;background:#fff;display:grid;place-items:center;position:relative}
+.ph img{width:100%;height:100%;object-fit:contain}
+.ph .new{position:absolute;top:10px;left:10px;background:var(--blue);color:#fff;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
+.cb{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.cb h3{font-size:14px;font-weight:500;margin:0;line-height:1.35;min-height:2.7em}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.price{display:flex;align-items:baseline;gap:10px;margin-top:auto}
+.price b{font-size:20px;font-weight:500}
+.price s{font-size:12px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 9px;border-radius:999px;letter-spacing:.04em;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.info{background:var(--blue-soft);color:var(--blue)}
+.pill.muted{background:var(--line);color:var(--muted)}
+.buy{display:flex;gap:8px;align-items:center}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.step button{border:0;background:transparent;width:32px;height:34px;font-size:16px}
+.step span{min-width:44px;text-align:center;font-size:14px}
+.buy .btn{flex:1;padding:9px 10px}
+
+/* cart & orders */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.rows{display:grid}
+.row{display:grid;grid-template-columns:56px minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row img{width:56px;height:56px;object-fit:contain;background:#fff;border-radius:6px}
+.row .t{min-width:0}
+.row .t div{font-size:14px}
+.row .sum{min-width:96px;text-align:right;font-weight:500}
+@media (max-width:560px){.row{grid-template-columns:48px minmax(0,1fr);}.row .step,.row .sum{grid-column:2}.row .sum{text-align:left}}
+.summary{padding:20px;display:grid;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 120px)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.kv.total{font-size:18px;font-weight:500;border-top:1px solid var(--line);padding-top:12px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue)}
+.empty{padding:48px 20px;text-align:center;color:var(--muted)}
+.empty h2{color:var(--ink);margin-bottom:8px}
+
+.orders{display:grid;gap:12px}
+.order{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.ohead{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:14px 16px;width:100%;background:none;border:0;text-align:left}
+.ohead .no{font-family:var(--display);font-size:22px;font-weight:600}
+@media (max-width:560px){.ohead{grid-template-columns:auto minmax(0,1fr)}.ohead .num.s{grid-column:2}}
+.olines{border-top:1px solid var(--line);padding:6px 16px 14px}
+.oline{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;padding:8px 0;font-size:14px;border-bottom:1px dashed var(--line)}
+.oline:last-child{border-bottom:0}
+.skel{background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:sh 1.4s infinite;border-radius:var(--r)}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:999px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+footer{padding-block:24px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+</style>
+
+</head>
+<body>
+<header id="hdr" hidden>
+  <div class="wrap">
+    <div class="hbar">
+      <div class="logo"><b>HADAT</b><span>B2B · для партнёров</span></div>
+      <div class="who"><span>Вы вошли как</span><strong id="whoName"></strong><button class="link" id="logout" type="button">Выйти</button></div>
+    </div>
+    <nav aria-label="Разделы">
+      <button type="button" data-tab="catalog" aria-current="page">Каталог</button>
+      <button type="button" data-tab="cart">Корзина<span class="badge num" id="cartCount" hidden>0</span></button>
+      <button type="button" data-tab="orders">Мои заказы</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="app">
+  <div class="login">
+    <div class="mark">HADAT</div>
+    <div class="eyebrow" style="text-align:center">Портал для партнёров · демо</div>
+    <div class="skel" style="height:44px"></div>
+    <p class="note" style="text-align:center;margin:0">Подключаемся к тестовой базе в Airtable…</p>
+  </div>
+</main>
+
+<footer><div class="wrap">Демо-версия B2B-портала Hadat. Каталог, клиенты и заказы читаются и записываются в тестовую базу Airtable «Hadat B2B Portal — MVP (тест)». Цены и остатки тестовые.</div></footer>
+
+<script>
+const BASE = "appPQgOZVe1hIwsXm";
+const T = {
+  prod:{id:"tblJQ3MXYQab4vqSM", name:"fldw5sNze44RGHSPG", sku:"fldx6e7SB8BCJdDTe", ean:"fldM3gEaVOboNeSng", line:"fldKAkNfqIaF0HEM7", type:"fldYULjv2pkyL1ZSl", vol:"fldfOeJbWYb8Qbp35", rrp:"fldDt3mzNjDEklE3I", mult:"fldPv6tuD2FBFH9S9", status:"fldYxpw6bRtdsPT2r", stock:"fld62wvggvuFwZWV2", photo:"fldZx9y1AkdnTYURt"},
+  grp:{id:"tblgq9AuVkPiP3Sfg", name:"flddU1UkDigpxUb4C", disc:"fldDD6JXnuhO2NySM", min:"fldcMde45LBRTZltx"},
+  cli:{id:"tblRpgqpDdeuscyVZ", company:"fldJBNgfbJR1MhG9p", inn:"fldJgTuVEf7AkqtjG", city:"fldvWWJj3G2JwSE6w", contact:"fld91jd7DgD2ni3Of", email:"fldzMfWAu0FlJsCe7", phone:"fldlp39UtoHsIIt2i", access:"fldsjtHOYHeQ3W1z2", group:"fldcL04Rs7IAUGSZE"},
+  ord:{id:"tblMNpw0BBjoCVqSR", num:"fldds6c0SzpmpHdnR", date:"fldvsyzhAlwA4sqks", status:"fldMvk5Qx4DIBNpBd", comment:"fldCULT7c5x8wBuVo", client:"fldiGVjmdZRQWX6wE", lines:"fldt33LgK8IenWCmk", total:"fldwKpI8ggCeh70D9"},
+  line:{id:"tbloOj0cv4gLXTTOV", title:"fldUIPqRFjoLGz9t5", qty:"fld2b7t1FEJ8QoZQY", price:"fldWI4xhpcGWcWCJx", order:"fld54aZZUEmVAPQiT", product:"fldbdz5MkczxtFebM", sum:"fldxGZvcL6UaF9JEM"}
+};
+const ORDER_STATUS = {"Новый":"info","Подтверждён":"info","Собирается":"warn","Отгружен":"warn","Доставлен":"ok","Отменён":"muted"};
+
+const st = {products:[], groups:{}, clients:[], client:null, tab:"catalog", cart:{}, q:"", line:"", type:"", inStock:false, orders:null, open:{}, linesCache:{}};
+
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rub = n => (Math.round(n||0)).toLocaleString("ru-RU") + " ₽";
+const sel = v => v && typeof v === "object" && !Array.isArray(v) ? (v.name ?? "") : (v ?? "");
+const ids = v => Array.isArray(v) ? v.map(x => typeof x === "string" ? x : x?.id).filter(Boolean) : (v?.linkedRecordIds || []);
+const store = {get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.append(t);setTimeout(()=>t.remove(),3200)}
+
+/* ---------- Airtable REST API, ключ хранится только в браузере ---------- */
+const KEY_STORE = "hadat_b2b_airtable_key";
+let KEY = store.get(KEY_STORE) || "";
+function errText(e){
+  switch(e?.code){
+    case "no_key": return "Введите ключ доступа к тестовой базе.";
+    case "bad_key": return "Ключ не подошёл: Airtable отклонил его. Проверьте ключ или попросите новый.";
+    case "forbidden": return "У ключа нет доступа к тестовой базе. Нужен токен с правами data.records:read и data.records:write на базу «Hadat B2B Portal — MVP (тест)».";
+    case "rate_limited": return "Airtable просит сделать паузу: слишком много запросов. Повторите через 30 секунд.";
+    case "network": return "Нет связи с Airtable. Проверьте интернет и повторите.";
+    case "tool_error": return "Airtable вернул ошибку: " + (e.message || "без описания");
+    default: return "Не удалось связаться с Airtable" + (e?.code ? " (" + e.code + ")" : "") + ".";
+  }
+}
+async function api(path, opts = {}){
+  if (!KEY) throw {code:"no_key"};
+  let r;
+  try {
+    r = await fetch("https://api.airtable.com/v0/" + BASE + "/" + path, {...opts, headers:{"Authorization":"Bearer " + KEY, "Content-Type":"application/json"}});
+  } catch(e){ throw {code:"network"} }
+  if (r.status === 401) throw {code:"bad_key"};
+  if (r.status === 403 || r.status === 404) throw {code:"forbidden"};
+  if (r.status === 429) throw {code:"rate_limited"};
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw {code:"tool_error", message:j?.error?.message || j?.error?.type || ("HTTP " + r.status)};
+  return j;
+}
+async function listAll(tableId, fieldIds){
+  let out = [], offset;
+  for (let i = 0; i < 20; i++){
+    const q = new URLSearchParams({returnFieldsByFieldId:"true", pageSize:"100"});
+    fieldIds.forEach(f => q.append("fields[]", f));
+    if (offset) q.set("offset", offset);
+    const j = await api(tableId + "?" + q);
+    out = out.concat(j.records || []);
+    offset = j.offset;
+    if (!offset) break;
+  }
+  return out.map(r => ({id:r.id, f:r.fields || {}}));
+}
+async function create(tableId, records){
+  const j = await api(tableId + "?returnFieldsByFieldId=true", {method:"POST", body:JSON.stringify({records, returnFieldsByFieldId:true})});
+  return (j.records || []).map(r => ({id:r.id, f:r.fields || {}}));
+}
+
+/* ---------- загрузка ---------- */
+async function boot(){
+  if (!KEY) return renderKey();
+  try {
+    const [p, g, c] = await Promise.all([
+      listAll(T.prod.id, Object.values(T.prod).filter(x => x !== T.prod.id)),
+      listAll(T.grp.id, [T.grp.name, T.grp.disc, T.grp.min]),
+      listAll(T.cli.id, [T.cli.company, T.cli.city, T.cli.contact, T.cli.email, T.cli.access, T.cli.group])
+    ]);
+    const P = T.prod;
+    st.products = p.map(r => ({
+      id:r.id, name:r.f[P.name]||"", sku:r.f[P.sku]||"", ean:r.f[P.ean]||"", line:r.f[P.line]||"", type:r.f[P.type]||"", vol:r.f[P.vol]||"",
+      rrp:+r.f[P.rrp]||0, mult:Math.max(1, +r.f[P.mult]||1), status:sel(r.f[P.status]), stock:+r.f[P.stock]||0,
+      img:(r.f[P.photo]||[])[0]?.thumbnails?.large?.url || (r.f[P.photo]||[])[0]?.url || ""
+    })).filter(x => x.name && x.rrp).sort((a,b) => a.line.localeCompare(b.line) || a.name.localeCompare(b.name));
+    g.forEach(r => st.groups[r.id] = {name:r.f[T.grp.name], disc:+r.f[T.grp.disc]||0, min:+r.f[T.grp.min]||0});
+    st.clients = c.map(r => ({id:r.id, company:r.f[T.cli.company], city:r.f[T.cli.city], contact:r.f[T.cli.contact], email:r.f[T.cli.email], access:sel(r.f[T.cli.access]), group:ids(r.f[T.cli.group])[0]}));
+    const saved = store.get("hadat_b2b_client");
+    const cl = st.clients.find(x => x.id === saved && x.access === "Одобрен");
+    if (cl) login(cl); else renderLogin();
+  } catch(e){
+    if (e?.code === "bad_key" || e?.code === "forbidden") return renderKey(errText(e));
+    renderFatal(e);
+  }
+}
+function renderKey(msg){
+  $("#hdr").hidden = true;
+  app.innerHTML = `<form class="login" id="keyForm">
+    <div class="mark">HADAT</div>
+    <div class="eyebrow" style="text-align:center">Портал для партнёров · демо</div>
+    ${msg ? `<div class="banner bad"><p>${esc(msg)}</p></div>` : ""}
+    <div class="field"><label for="k">Ключ доступа к демо</label><input id="k" type="password" autocomplete="off" required placeholder="pat…"></div>
+    <button class="btn" type="submit">Открыть демо</button>
+    <p class="note" style="margin:0;text-align:center">Ключ выдаёт автор демо. Он сохраняется только в этом браузере и даёт доступ лишь к тестовой базе с вымышленными данными.</p>
+  </form>`;
+  $("#keyForm").onsubmit = ev => { ev.preventDefault(); KEY = $("#k").value.trim(); store.set(KEY_STORE, KEY); app.innerHTML = `<div class="login"><div class="skel" style="height:44px"></div></div>`; boot() };
+}
+function renderFatal(e){
+  $("#hdr").hidden = true;
+  app.innerHTML = `<div class="login"><div class="mark">HADAT</div>
+    <div class="banner bad"><p>${esc(errText(e))}</p></div>
+    <button class="btn ghost" id="retry" type="button">Попробовать снова</button>
+    <button class="link" id="resetKey" type="button">Ввести другой ключ</button>
+  </div>`;
+  $("#retry").onclick = () => { app.innerHTML = `<div class="login"><div class="skel" style="height:44px"></div></div>`; boot() };
+  $("#resetKey").onclick = () => { KEY = ""; store.set(KEY_STORE, ""); renderKey() };
+}
+
+/* ---------- вход и заявка ---------- */
+function renderLogin(mode){
+  $("#hdr").hidden = true;
+  const ok = st.clients.filter(c => c.access === "Одобрен");
+  const pend = st.clients.filter(c => c.access === "Заявка");
+  if (mode === "apply") {
+    app.innerHTML = `<form class="login" id="applyForm">
+      <div class="mark">HADAT</div>
+      <div><h2>Заявка на доступ</h2><p class="note">Менеджер проверит компанию и откроет доступ с вашими оптовыми условиями.</p></div>
+      <div class="field"><label for="a_company">Компания</label><input id="a_company" required placeholder="ООО «Салон красоты»"></div>
+      <div class="grid2">
+        <div class="field"><label for="a_inn">ИНН</label><input id="a_inn" required inputmode="numeric" pattern="\\d{10}|\\d{12}" placeholder="10 или 12 цифр"></div>
+        <div class="field"><label for="a_city">Город</label><input id="a_city" required></div>
+      </div>
+      <div class="field"><label for="a_contact">Контактное лицо</label><input id="a_contact" required></div>
+      <div class="grid2">
+        <div class="field"><label for="a_email">Email</label><input id="a_email" type="email" required></div>
+        <div class="field"><label for="a_phone">Телефон</label><input id="a_phone" type="tel" required></div>
+      </div>
+      <p class="note" style="margin:0">Это демо: заявка запишется в тестовую базу. Не указывайте реальные данные.</p>
+      <button class="btn" id="a_submit" type="submit">Отправить заявку</button>
+      <button class="link" type="button" id="toLogin">Вернуться ко входу</button>
+    </form>`;
+    $("#toLogin").onclick = () => renderLogin();
+    $("#applyForm").onsubmit = async ev => {
+      ev.preventDefault(); const b = $("#a_submit"); b.disabled = true; b.textContent = "Отправляем…";
+      const C = T.cli;
+      try {
+        const [r] = await create(C.id, [{fields:{[C.company]:$("#a_company").value.trim(), [C.inn]:$("#a_inn").value.trim(), [C.city]:$("#a_city").value.trim(), [C.contact]:$("#a_contact").value.trim(), [C.email]:$("#a_email").value.trim(), [C.phone]:$("#a_phone").value.trim(), [C.access]:"Заявка"}}]);
+        st.clients.push({id:r?.id, company:$("#a_company").value.trim(), access:"Заявка"});
+        app.innerHTML = `<div class="login"><div class="mark">HADAT</div><div class="banner ok"><p>Заявка принята. Менеджер свяжется с вами, после одобрения вы сможете войти.</p></div><button class="btn ghost" id="back" type="button">Ко входу</button></div>`;
+        $("#back").onclick = () => renderLogin();
+      } catch(e){
+        b.disabled = false; b.textContent = "Отправить заявку";
+        toast(e?.code === "network" ? "Ответ не получен. Заявка могла сохраниться — проверьте базу перед повтором." : errText(e));
+      }
+    };
+    return;
+  }
+  app.innerHTML = `<div class="login">
+    <div class="mark">HADAT</div>
+    <div class="eyebrow" style="text-align:center">Портал для партнёров</div>
+    <div class="field"><label for="clientSel">Демо-вход: выберите клиента</label>
+      <select id="clientSel">${ok.map(c => `<option value="${c.id}">${esc(c.company)} · ${esc(st.groups[c.group]?.name || "без группы")}</option>`).join("")}</select>
+    </div>
+    <button class="btn" id="enter" type="button" ${ok.length ? "" : "disabled"}>Войти</button>
+    <p class="note" style="margin:0;text-align:center">В рабочей версии здесь будет вход по email и паролю. Список клиентов берётся из таблицы «Клиенты».</p>
+    ${pend.length ? `<p class="note" style="margin:0;text-align:center">Ждут одобрения: ${pend.map(c => esc(c.company)).join(", ")}</p>` : ""}
+    <button class="link" id="toApply" type="button">Нет доступа? Оставить заявку</button>
+  </div>`;
+  $("#enter").onclick = () => login(st.clients.find(c => c.id === $("#clientSel").value));
+  $("#toApply").onclick = () => renderLogin("apply");
+}
+function login(c){
+  st.client = c; store.set("hadat_b2b_client", c.id);
+  st.cart = store.get("hadat_b2b_cart_" + c.id) || {};
+  st.orders = null; st.tab = "catalog";
+  $("#hdr").hidden = false; $("#whoName").textContent = c.company;
+  render();
+}
+$("#logout").onclick = () => { st.client = null; store.set("hadat_b2b_client", null); renderLogin() };
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => { st.tab = b.dataset.tab; render(); window.scrollTo({top:0}) });
+
+/* ---------- цены ---------- */
+const grp = () => st.groups[st.client?.group] || {name:"—", disc:0, min:0};
+const priceOf = p => Math.round(p.rrp * (1 - grp().disc));
+function stockPill(p){
+  if (p.stock <= 0) return `<span class="pill bad">Нет в наличии</span>`;
+  if (p.stock < 60) return `<span class="pill warn num">Мало · ${p.stock} шт</span>`;
+  return `<span class="pill ok num">В наличии · ${p.stock} шт</span>`;
+}
+function saveCart(){ store.set("hadat_b2b_cart_" + st.client.id, st.cart); updateCount() }
+function updateCount(){ const n = Object.keys(st.cart).length; const b = $("#cartCount"); b.hidden = !n; b.textContent = n }
+function cartLines(){ return Object.entries(st.cart).map(([id,q]) => ({p:st.products.find(x => x.id === id), q})).filter(x => x.p && x.q > 0) }
+
+/* ---------- рендер ---------- */
+function render(){
+  document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === st.tab ? "page" : "false"));
+  updateCount();
+  if (st.tab === "catalog") renderCatalog();
+  else if (st.tab === "cart") renderCart();
+  else renderOrders();
+}
+
+function renderCatalog(){
+  const g = grp();
+  const lines = [...new Set(st.products.map(p => p.line).filter(Boolean))];
+  const types = [...new Set(st.products.map(p => p.type).filter(Boolean))].sort();
+  app.innerHTML = `
+    <div class="cat-head">
+      <div><div class="eyebrow">Каталог · ${st.products.length} позиций</div><h1>Профессиональный уход Hadat</h1></div>
+      <div class="terms"><span>Ценовая группа: <b>${esc(g.name)}</b></span><span>Скидка от РРЦ: <b class="num">${Math.round(g.disc*100)}%</b></span><span>Мин. заказ: <b class="num">${rub(g.min)}</b></span></div>
+    </div>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Название, артикул или штрихкод" value="${esc(st.q)}" aria-label="Поиск">
+      <select id="type" aria-label="Тип продукта"><option value="">Все типы</option>${types.map(t => `<option ${t===st.type?"selected":""}>${esc(t)}</option>`).join("")}</select>
+      <label class="chk"><input type="checkbox" id="inStock" ${st.inStock?"checked":""}> Только в наличии</label>
+    </div>
+    <div class="chips" role="group" aria-label="Линии">${["", ...lines].map(l => `<button type="button" class="chip" data-line="${esc(l)}" aria-pressed="${l===st.line}">${l ? esc(l) : "Все линии"}</button>`).join("")}</div>
+    <div class="cards" id="cards"></div>`;
+  $("#q").oninput = e => { st.q = e.target.value; drawCards() };
+  $("#type").onchange = e => { st.type = e.target.value; drawCards() };
+  $("#inStock").onchange = e => { st.inStock = e.target.checked; drawCards() };
+  document.querySelectorAll(".chip").forEach(b => b.onclick = () => { st.line = b.dataset.line; document.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x === b)); drawCards() });
+  drawCards();
+}
+const pick = {};
+function drawCards(){
+  const q = st.q.trim().toLowerCase();
+  const list = st.products.filter(p => (!st.line || p.line === st.line) && (!st.type || p.type === st.type) && (!st.inStock || p.stock > 0) &&
+    (!q || (p.name + " " + p.sku + " " + p.ean).toLowerCase().includes(q)));
+  const box = $("#cards");
+  if (!list.length) { box.innerHTML = `<div class="empty" style="grid-column:1/-1"><h2>Ничего не нашлось</h2><p>Измените поиск или фильтры.</p></div>`; return }
+  box.innerHTML = list.map(p => {
+    const q0 = pick[p.id] || p.mult; const inCart = st.cart[p.id];
+    return `<article class="card">
+      <div class="ph">${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">` : ""}${p.status === "Новинка" ? `<span class="new">Новинка</span>` : ""}</div>
+      <div class="cb">
+        <div class="eyebrow">${esc(p.line)} · ${esc(p.type)}</div>
+        <h3>${esc(p.name)}</h3>
+        <div class="meta num"><span>Арт. ${esc(p.sku)}</span><span>Кратность ${p.mult} шт</span></div>
+        ${stockPill(p)}
+        <div class="price num"><b>${rub(priceOf(p))}</b><s>РРЦ ${rub(p.rrp)}</s></div>
+        <div class="buy">
+          <div class="step"><button type="button" data-m="${p.id}" aria-label="Меньше">−</button><span class="num" id="q_${p.id}">${q0}</span><button type="button" data-p="${p.id}" aria-label="Больше">+</button></div>
+          <button class="btn small" type="button" data-add="${p.id}" ${p.stock<=0?"disabled":""}>${inCart ? "Ещё" : "В корзину"}</button>
+        </div>
+        ${inCart ? `<div class="note num">В корзине: ${inCart} шт</div>` : ""}
+      </div></article>`;
+  }).join("");
+  box.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { const p = st.products.find(x => x.id === b.dataset.m); pick[p.id] = Math.max(p.mult, (pick[p.id]||p.mult) - p.mult); $("#q_"+p.id).textContent = pick[p.id] });
+  box.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { const p = st.products.find(x => x.id === b.dataset.p); pick[p.id] = (pick[p.id]||p.mult) + p.mult; $("#q_"+p.id).textContent = pick[p.id] });
+  box.querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const p = st.products.find(x => x.id === b.dataset.add); const q = pick[p.id] || p.mult; st.cart[p.id] = (st.cart[p.id]||0) + q; saveCart(); toast(`Добавлено: ${q} шт · ${p.name}`); drawCards() });
+}
+
+function renderCart(){
+  const L = cartLines();
+  if (!L.length) { app.innerHTML = `<div class="panel empty"><h2>Корзина пуста</h2><p>Добавьте товары из каталога. Количество меняется кратно упаковке.</p><button class="btn ghost" type="button" id="goCat">Перейти в каталог</button></div>`; $("#goCat").onclick = () => { st.tab = "catalog"; render() }; return }
+  const g = grp();
+  const total = L.reduce((s,x) => s + priceOf(x.p) * x.q, 0);
+  const rrpTotal = L.reduce((s,x) => s + x.p.rrp * x.q, 0);
+  const units = L.reduce((s,x) => s + x.q, 0);
+  const short = Math.max(0, g.min - total);
+  const over = L.filter(x => x.q > x.p.stock);
+  app.innerHTML = `
+    <div class="cat-head"><div><div class="eyebrow">Корзина</div><h1>Ваш заказ</h1></div></div>
+    <div class="layout">
+      <div class="panel rows">${L.map(x => `
+        <div class="row">
+          ${x.p.img ? `<img src="${esc(x.p.img)}" alt="">` : `<span></span>`}
+          <div class="t"><div>${esc(x.p.name)}</div><div class="note num">Арт. ${esc(x.p.sku)} · ${rub(priceOf(x.p))} / шт · кратность ${x.p.mult}${x.q > x.p.stock ? ` · <span style="color:var(--bad)">на складе ${x.p.stock} шт</span>` : ""}</div></div>
+          <div class="step"><button type="button" data-cm="${x.p.id}" aria-label="Меньше">−</button><span class="num">${x.q}</span><button type="button" data-cp="${x.p.id}" aria-label="Больше">+</button></div>
+          <div class="sum num">${rub(priceOf(x.p) * x.q)}</div>
+        </div>`).join("")}
+      </div>
+      <aside class="panel summary">
+        <div class="kv"><span>Позиций / штук</span><span class="num">${L.length} / ${units}</span></div>
+        <div class="kv"><span>По РРЦ</span><span class="num">${rub(rrpTotal)}</span></div>
+        <div class="kv"><span>Ваша скидка ${Math.round(g.disc*100)}%</span><span class="num">−${rub(rrpTotal - total)}</span></div>
+        <div class="kv total"><span>Итого</span><span class="num">${rub(total)}</span></div>
+        <div style="display:grid;gap:6px">
+          <div class="bar"><i style="width:${Math.min(100, g.min ? total/g.min*100 : 100)}%"></i></div>
+          <div class="note num">${short ? `До минимального заказа ${rub(g.min)} осталось ${rub(short)}` : `Минимальная сумма ${rub(g.min)} набрана`}</div>
+        </div>
+        ${over.length ? `<div class="note" style="color:var(--bad)">${over.length} поз. больше остатка. Менеджер уточнит сроки поставки.</div>` : ""}
+        <div class="field"><label for="comment">Комментарий к заказу</label><textarea id="comment" rows="3" placeholder="Адрес доставки, пожелания по отгрузке">${esc(store.get("hadat_b2b_comment") || "")}</textarea></div>
+        <button class="btn" id="send" type="button" ${short ? "disabled" : ""}>Отправить заказ</button>
+        <p class="note" style="margin:0">Заказ попадёт в тестовую базу Airtable со статусом «Новый». В рабочей версии он создаётся сделкой в Битрикс24.</p>
+      </aside>
+    </div>`;
+  app.querySelectorAll("[data-cm]").forEach(b => b.onclick = () => { const p = st.products.find(x => x.id === b.dataset.cm); st.cart[p.id] -= p.mult; if (st.cart[p.id] <= 0) delete st.cart[p.id]; saveCart(); renderCart() });
+  app.querySelectorAll("[data-cp]").forEach(b => b.onclick = () => { const p = st.products.find(x => x.id === b.dataset.cp); st.cart[p.id] += p.mult; saveCart(); renderCart() });
+  $("#comment").oninput = e => store.set("hadat_b2b_comment", e.target.value);
+  $("#send").onclick = () => sendOrder(L);
+}
+
+async function sendOrder(L){
+  const b = $("#send"); b.disabled = true; b.textContent = "Отправляем…";
+  const O = T.ord, LN = T.line;
+  try {
+    const [o] = await create(O.id, [{fields:{[O.client]:[st.client.id], [O.date]:new Date().toISOString(), [O.status]:"Новый", [O.comment]:$("#comment").value.trim()}}]);
+    if (!o?.id) throw {code:"tool_error", message:"заказ не вернул ID"};
+    const recs = L.map(x => ({fields:{[LN.title]:`${x.p.sku} · ${x.p.name}`, [LN.order]:[o.id], [LN.product]:[x.p.id], [LN.qty]:x.q, [LN.price]:priceOf(x.p)}}));
+    for (let i = 0; i < recs.length; i += 50) await create(LN.id, recs.slice(i, i+50));
+    st.cart = {}; saveCart(); store.set("hadat_b2b_comment", ""); st.orders = null;
+    const no = o.f?.[O.num];
+    st.tab = "orders"; st.open[o.id] = true; render();
+    toast(`Заказ ${no ? "№" + no + " " : ""}отправлен`);
+  } catch(e){
+    b.disabled = false; b.textContent = "Отправить заказ";
+    const ambiguous = ["network"].includes(e?.code);
+    toast(ambiguous ? "Ответ от Airtable не пришёл. Заказ мог создаться — проверьте «Мои заказы» перед повтором." : errText(e));
+  }
+}
+
+async function renderOrders(){
+  app.innerHTML = `<div class="cat-head"><div><div class="eyebrow">История</div><h1>Мои заказы</h1></div><button class="btn ghost small" id="reload" type="button">Обновить</button></div><div class="orders" id="olist">${st.orders ? "" : `<div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div>`}</div>`;
+  $("#reload").onclick = () => { st.orders = null; st.linesCache = {}; renderOrders() };
+  if (!st.orders) {
+    try {
+      const O = T.ord;
+      const all = await listAll(O.id, [O.num, O.date, O.status, O.comment, O.client, O.lines, O.total]);
+      st.orders = all.filter(r => ids(r.f[O.client]).includes(st.client.id)).map(r => ({id:r.id, num:r.f[O.num], date:r.f[O.date], status:sel(r.f[O.status]), comment:r.f[O.comment], lines:ids(r.f[O.lines]), total:+r.f[O.total]||0})).sort((a,b) => (b.num||0) - (a.num||0));
+    } catch(e){ $("#olist").innerHTML = `<div class="banner bad"><p>${esc(errText(e))}</p></div>`; return }
+  }
+  drawOrders();
+}
+function drawOrders(){
+  const box = $("#olist"); if (!box) return;
+  if (!st.orders.length) { box.innerHTML = `<div class="panel empty"><h2>Заказов пока нет</h2><p>Соберите корзину в каталоге и отправьте первый заказ.</p></div>`; return }
+  box.innerHTML = st.orders.map(o => `
+    <div class="order">
+      <button class="ohead" type="button" data-o="${o.id}" aria-expanded="${!!st.open[o.id]}">
+        <span class="no num">№${esc(o.num)}</span>
+        <span><span class="note num">${o.date ? new Date(o.date).toLocaleString("ru-RU",{day:"2-digit",month:"long",hour:"2-digit",minute:"2-digit"}) : ""} · ${o.lines.length} поз.</span></span>
+        <span class="pill ${ORDER_STATUS[o.status] || "muted"}">${esc(o.status || "—")}</span>
+        <span class="num s" style="font-weight:500">${rub(o.total)}</span>
+      </button>
+      ${st.open[o.id] ? `<div class="olines" id="ol_${o.id}">${linesHtml(o)}</div>` : ""}
+    </div>`).join("");
+  box.querySelectorAll("[data-o]").forEach(b => b.onclick = () => { st.open[b.dataset.o] = !st.open[b.dataset.o]; drawOrders(); loadLines(st.orders.find(o => o.id === b.dataset.o)) });
+  st.orders.filter(o => st.open[o.id]).forEach(loadLines);
+}
+function linesHtml(o){
+  const L = st.linesCache[o.id];
+  if (L === undefined) return `<div class="skel" style="height:36px;margin-top:8px"></div>`;
+  if (L.error) return `<div class="note" style="color:var(--bad)">${esc(L.error)}</div>`;
+  return L.map(l => `<div class="oline"><span>${esc(l.title)}</span><span class="num note">${l.qty} × ${rub(l.price)}</span><span class="num">${rub(l.sum)}</span></div>`).join("") + (o.comment ? `<div class="note" style="margin-top:8px">Комментарий: ${esc(o.comment)}</div>` : "");
+}
+const loading = {};
+async function loadLines(o){
+  if (!o || !st.open[o.id] || st.linesCache[o.id] !== undefined || loading[o.id]) return;
+  loading[o.id] = true;
+  try {
+    const LN = T.line;
+    if (!st._allLines) st._allLines = await listAll(LN.id, [LN.title, LN.qty, LN.price, LN.order, LN.sum]);
+    let rows = st._allLines.filter(r => o.lines.includes(r.id));
+    if (rows.length < o.lines.length) { st._allLines = await listAll(LN.id, [LN.title, LN.qty, LN.price, LN.order, LN.sum]); rows = st._allLines.filter(r => o.lines.includes(r.id)) }
+    st.linesCache[o.id] = rows.map(r => ({title:r.f[LN.title], qty:+r.f[LN.qty]||0, price:+r.f[LN.price]||0, sum:+r.f[LN.sum] || (+r.f[LN.qty]||0)*(+r.f[LN.price]||0)}));
+  } catch(e){ st.linesCache[o.id] = {error:errText(e)} }
+  loading[o.id] = false;
+  const el = document.getElementById("ol_" + o.id); if (el) el.innerHTML = linesHtml(o);
+}
+
+boot();
+</script>
+
+</body>
+</html>
