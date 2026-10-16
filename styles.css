@@ -515,8 +515,8 @@ button.im{display:block}
 /* home tiles with icons */
 .tile{position:relative;padding:20px 20px 20px 84px;min-height:110px}
 .tile-ic{position:absolute;left:20px;top:20px;width:48px;height:48px;border-radius:12px;background:var(--lb300);display:grid;place-items:center;color:var(--text)}
-.tile:nth-child(2) .tile-ic{background:#D6EEA0}
-.tile:nth-child(3) .tile-ic{background:var(--beige)}
+.tile:nth-child(2) .tile-ic{background:var(--beige)}
+.tile:nth-child(3) .tile-ic{background:var(--brown);color:var(--beige-photo)}
 .tile-go{position:absolute;right:18px;top:20px;color:var(--text-2);transition:transform .15s}
 .tile:hover .tile-go{transform:translateX(4px)}
 /* notifications */
@@ -552,7 +552,9 @@ button.im{display:block}
 .chat-fab{position:fixed;right:24px;bottom:24px;z-index:45;display:flex;flex-direction:column;align-items:center;gap:10px}
 .chat-btn{width:56px;height:56px;border-radius:50%;background:var(--brown);color:var(--beige-photo);display:grid;place-items:center;box-shadow:0 8px 24px rgba(48,37,38,.28)}
 .chat-btn:hover{background:#302526}
-.chat-btn .ico{width:26px;height:26px}
+.chat-btn .ico{width:28px;height:28px}
+.chat-btn .ico .fill{fill:var(--beige-photo);stroke:none}
+.chat-btn .ico .dot{fill:var(--brown);stroke:none}
 .chat-list{display:flex;flex-direction:column;gap:10px}
 .chat-list[hidden]{display:none}
 .chat-list .msg{width:44px;height:44px;border-radius:10px;box-shadow:0 4px 12px rgba(48,37,38,.2)}

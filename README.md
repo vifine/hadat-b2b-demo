@@ -5,7 +5,7 @@ Interface demo for the Hadat B2B partner portal (MVP), built from the Figma mock
 - Served via GitHub Pages at https://hadat-b2b.vifine.tech
 - Files: `index.html` (shell), `styles.css`, `app.js`, `assets/` (logos, login photo), `config.js` (Airtable key)
 - Data: test Airtable base "Hadat B2B Portal — MVP (тест)" — products, price groups, clients, portal users, orders and order lines. All clients are fictitious; stock levels and discounts are test values.
-- Access: put an Airtable token scoped to the test base (`data.records:read`, `data.records:write`) into `config.js`. If it is empty, the page asks for the key on first open and keeps it only in that browser. Test login: salon@test.example / demo-salon.
+- Access: put an Airtable token scoped to the test base (`data.records:read`, `data.records:write`) into `config.js`. If it is empty, the page asks for the key on first open and keeps it only in that browser. Test login: distr@test.example / demo-distr (ООО «Дистрибуция Тест», Алексей Семенов).
 
 Screens:
 - login, access request, "request received" (desktop: photo background; mobile: first screen with photo and a button that scrolls to the form)

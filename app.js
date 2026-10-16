@@ -43,7 +43,7 @@ const P = {
   search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5V8"/>',
   trash:'<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
-  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>',
+  chat:'<path class="fill" d="M12 3.5c-5 0-9 3.4-9 7.7 0 2.2 1 4.1 2.7 5.5L5 20.5l4.2-1.9c.9.2 1.8.3 2.8.3 5 0 9-3.4 9-7.7s-4-7.7-9-7.7z"/><circle class="dot" cx="8.2" cy="11.2" r="1.15"/><circle class="dot" cx="12" cy="11.2" r="1.15"/><circle class="dot" cx="15.8" cy="11.2" r="1.15"/>',
   bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
@@ -267,12 +267,12 @@ function renderLogin(){
       <div class="eyebrow">Личный кабинет</div>
       <h2 class="h-display">Добро пожаловать</h2>
       <p class="lead">Войдите, чтобы увидеть персональные цены и оформить заказ.</p>
-      <div class="field"><label for="u_login">Рабочий email</label><input class="input" id="u_login" type="email" autocomplete="username" required placeholder="salon@test.example"><span class="hint">Почта, указанная при регистрации</span></div>
+      <div class="field"><label for="u_login">Рабочий email</label><input class="input" id="u_login" type="email" autocomplete="username" required placeholder="distr@test.example"><span class="hint">Почта, указанная при регистрации</span></div>
       <div class="field"><label for="u_pass">Пароль</label><div class="pwd"><input class="input" id="u_pass" type="password" autocomplete="current-password" required><button type="button" id="showPass" aria-label="Показать пароль">${ico("eye")}</button></div></div>
       <label class="check"><input type="checkbox" checked> Запомнить меня</label>
       <div class="err" id="loginErr" hidden></div>
       <button class="btn btn-brown" id="enter" type="submit">Войти</button>
-      <p class="demo-note">Тестовый вход: <code>salon@test.example</code> / <code>demo-salon</code> или <code>distr@test.example</code> / <code>demo-distr</code></p>
+      <p class="demo-note">Тестовый вход: <code>distr@test.example</code> / <code>demo-distr</code></p>
       <hr>
       <span class="hint">Ещё не сотрудничаете с нами?</span>
       <a class="btn btn-blue" href="#/apply">Подать заявку на доступ</a>
