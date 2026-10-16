@@ -429,10 +429,17 @@ function updateTopCart(){
 /* ---------- Главная ---------- */
 function renderHome(){
   const L = cartLines(), n = L.reduce((s, x) => s + x.q, 0);
-  shell("home", [["Главная"]], `
+  shell("home", [["Главная"]], `<div class="home">
+    <div class="page-head"><h1 class="h-display">Здравствуйте, ${esc((st.client.contact || "").split(" ")[0] || "партнёр")}</h1></div>
+    <p style="margin:0 0 8px;color:var(--text-2)">${esc(st.client.company)} · ценовая группа «${esc(grp().name)}», скидка ${Math.round(grp().disc * 100)}% от РРЦ</p>
+    <div class="home-grid">
+      <a class="tile" href="#/catalog"><span class="eyebrow">Каталог</span><b class="num">${new Set(st.products.map(p => p.base)).size} товаров</b><span>${st.products.length} вариаций · ${st.products.filter(p => p.stock > 0).length} в наличии</span></a>
+      <a class="tile" href="#/cart"><span class="eyebrow">Корзина</span><b class="num">${n ? money(cartTotal()) : "Пусто"}</b><span>${n ? `${L.length} ${plural(L.length, "позиция", "позиции", "позиций")} · ${n} ед.` : "Добавьте товары из каталога"}</span></a>
+      <a class="tile" href="#/orders"><span class="eyebrow">Заказы</span><b>История</b><span>Статусы, суммы и состав заказов</span></a>
+    </div>
     <section class="promos" aria-label="Новинки и линии" aria-roledescription="карусель">
       <div class="promos-track" id="promoTrack">${PROMOS.map((x, i) => `
-        <article class="promo-card" style="--pc:${x.bg}" aria-label="${i + 1} из ${PROMOS.length}">
+        <article class="promo-card" style="--pos:${x.pos || "center"}" aria-label="${i + 1} из ${PROMOS.length}">
           <div class="promo-img"><img src="${x.img}" alt="${esc(x.alt)}" loading="${i ? "lazy" : "eager"}"></div>
           <div class="promo-txt">
             <span class="promo-eyebrow">${esc(x.eyebrow)}</span>
@@ -443,19 +450,12 @@ function renderHome(){
         </article>`).join("")}
       </div>
       <div class="promo-dots" id="promoDots">${PROMOS.map((x, i) => `<button type="button" aria-label="Баннер ${i + 1}" data-dot="${i}"></button>`).join("")}</div>
-    </section>
-    <div class="page-head"><h1 class="h-display">Здравствуйте, ${esc((st.client.contact || "").split(" ")[0] || "партнёр")}</h1></div>
-    <p style="margin:0 0 8px;color:var(--text-2)">${esc(st.client.company)} · ценовая группа «${esc(grp().name)}», скидка ${Math.round(grp().disc * 100)}% от РРЦ</p>
-    <div class="home-grid">
-      <a class="tile" href="#/catalog"><span class="eyebrow">Каталог</span><b class="num">${new Set(st.products.map(p => p.base)).size} товаров</b><span>${st.products.length} вариаций · ${st.products.filter(p => p.stock > 0).length} в наличии</span></a>
-      <a class="tile" href="#/cart"><span class="eyebrow">Корзина</span><b class="num">${n ? money(cartTotal()) : "Пусто"}</b><span>${n ? `${L.length} ${plural(L.length, "позиция", "позиции", "позиций")} · ${n} ед.` : "Добавьте товары из каталога"}</span></a>
-      <a class="tile" href="#/orders"><span class="eyebrow">Заказы</span><b>История</b><span>Статусы, суммы и состав заказов</span></a>
-    </div>`);
+    </section></div>`);
   document.querySelectorAll("[data-promo]").forEach(a => a.onclick = e => { e.preventDefault(); const x = PROMOS[+a.dataset.promo]; st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false, ...x.filter}; go("#/catalog") });
   initPromoSlider();
 }
 const PROMOS = [
-  {img:"assets/promo-primer.jpg", alt:"Hair Discipline Style Primer 5-in-1", bg:"#7b5b63", eyebrow:"Новинка · стайлинг", title:"Style Primer 5-in-1", text:"Праймер для укладки: термозащита до 180 °C, контроль пушистости, эластичная фиксация, блеск и уход.", cta:"Смотреть новинки", note:"Праймер — скоро в каталоге", filter:{isNew:true}},
+  {img:"assets/promo-primer.jpg", pos:"center 30%", alt:"Hair Discipline Style Primer 5-in-1", bg:"#7b5b63", eyebrow:"Новинка · стайлинг", title:"Style Primer 5-in-1", text:"Праймер для укладки: термозащита до 180 °C, контроль пушистости, эластичная фиксация, блеск и уход.", cta:"Смотреть новинки", note:"Праймер — скоро в каталоге", filter:{isNew:true}},
   {img:"assets/promo-detox.jpg", alt:"Линия Detox Therapy", bg:"#2f3b31", eyebrow:"Новая линия · кожа головы", title:"Detox Therapy", text:"Глубокое очищение и баланс кожи головы: шампунь, скраб, пилинг и тоник.", cta:"Смотреть линию", filter:{line:"Detox Therapy"}},
   {img:"assets/promo-calm.jpg", alt:"Уход за телом Calm", bg:"#3b2e27", eyebrow:"Уход за телом", title:"Calm Body Care", text:"Очищение, увлажнение и комфорт кожи тела и рук с премиальной ароматикой.", cta:"Смотреть уход за телом", filter:{line:"Body"}}
 ];
@@ -538,7 +538,7 @@ function renderCatalog(){
 function vrowHtml(p){
   const q = st.cart[p.id] || 0, off = p.stock <= 0;
   return `<div class="vrow${q ? " incart" : ""}${off ? " off" : ""}" data-row="${p.id}">
-    <div class="im">${p.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : `<div class="thumb-ph"></div>`}</div>
+    <button type="button" class="im" data-open="${p.id}" aria-label="Карточка товара">${p.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : `<div class="thumb-ph"></div>`}</button>
     <div class="vol"><b class="num">${esc(p.vol)}</b><span class="sku num">${esc(p.sku)}</span>${q ? `<span class="incart-b">✓ в корзине</span>` : ""}</div>
     <div class="pr num"><b>${money(priceOf(p))}</b> <small>с НДС</small><button type="button" class="tip" data-tip="${p.id}" aria-label="Подробнее о цене">${ico("info")}</button>
       <div class="sub">${money(netOf(p))} без НДС · РРЦ ${money(p.rrp)}</div></div>
@@ -565,7 +565,7 @@ function drawCards(){
   if (!G.length){ box.innerHTML = `<div class="empty">${ico("search")}<h2 class="h-display">Ничего не найдено</h2><p>Измените поиск или сбросьте фильтры.</p><button class="btn btn-line" id="reset" type="button">Сбросить фильтры</button></div>`;
     $("#reset").onclick = () => { st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false}; renderCatalog() }; return }
   box.innerHTML = G.map(g => `<section class="pcard">
-    <div class="pcard-h"><h3>${esc(g.base)}</h3><span class="ptot num" data-ptot="${esc(g.base)}">${ptotHtml(g.base)}</span></div>
+    <div class="pcard-h"><h3><button type="button" class="open-link" data-open="${g.vs[0].id}">${esc(g.base)}</button></h3><span class="ptot num" data-ptot="${esc(g.base)}">${ptotHtml(g.base)}</span></div>
     ${g.vs.map(vrowHtml).join("")}</section>`).join("");
   bindSteppers(box, "c", p => refreshRow(p));
   box.querySelectorAll("[data-tip]").forEach(b => b.onclick = e => { e.stopPropagation(); showTip(b, st.products.find(x => x.id === b.dataset.tip)) });
@@ -602,6 +602,75 @@ function showTip(btn, p){
   t.style.left = Math.max(8, Math.min(window.innerWidth - 228, r.left + window.scrollX - 100)) + "px";
   t.style.top = (r.top + window.scrollY - t.offsetHeight - 8) + "px";
   setTimeout(() => document.addEventListener("click", () => t.remove(), {once:true}), 0);
+}
+
+
+/* ============================================================
+   КАРТОЧКА ТОВАРА — попап (экран 15 в Figma)
+   Характеристики на русском — снимок полей Hadat PIM: assets/products-ru.json
+   ============================================================ */
+let RU = null;
+async function loadRu(){ if (RU) return RU; try { RU = await (await fetch("assets/products-ru.json")).json() } catch(e){ RU = {} } return RU }
+const DASH = "—";
+function fmtVol(r, p){ return r.vol ? `${r.vol} ${r.volUnit === "g" ? "г" : "мл"}` : p.vol }
+function cardSections(p, r){
+  const n = v => v === undefined || v === null || v === "" ? DASH : String(v);
+  const mo = v => v ? `${v} мес.` : DASH;
+  const dims = r.L && r.W && r.H ? `${r.L} × ${r.W} × ${r.H} мм` : DASH;
+  const wt = r.net || r.gross ? `${r.net ? r.net + " г" : DASH} / ${r.gross ? r.gross + " г" : DASH}` : DASH;
+  return [
+    ["Описание", [["Описание товара", r.desc, 1], ["Какую проблему решает", r.problem], ["Результат", r.result], ["Назначение", r.purpose]]],
+    ["Для кого", [["Тип волос", r.hair], ["Тип кожи головы", r.scalp], ["Зона применения", r.zone], ["Тип кожи тела и рук", r.skin]]],
+    ["Компоненты", [["Ключевые компоненты", r.keyIngr], ["Активные компоненты и технология", r.actives], ["Состав (INCI)", r.inci, 1]]],
+    ["Способ применения", [["Способ применения", r.usage, 1]]],
+    ["Аромат", [["Группа аромата", r.aromaGroup], ["Описание аромата (короткое)", r.aromaShort], ["Описание аромата (развернутое)", r.aromaLong, 1], ["Ноты (верхние)", r.notesTop], ["Ноты (сердце)", r.notesHeart], ["Ноты (база)", r.notesBase]]],
+    ["Хранение и безопасность", [["Срок годности", mo(r.shelf)], ["После вскрытия", mo(r.pao)], ["Условия хранения", r.storage, 1], ["Предупреждения", r.warnings]]],
+    ["Упаковка и логистика", [["Объём", fmtVol(r, p)], ["Тип упаковки", r.packType], ["Комплектация упаковки", r.packKit], ["Вес нетто / брутто", wt], ["Габариты (Д × Ш × В)", dims], ["Кол-во в мастер-боксе", r.masterBox ? r.masterBox + " шт." : ""], ["Кол-во в транспортном коробе", r.transportBox ? r.transportBox + " шт." : ""], ["Кол-во в наборе", r.setQty ? r.setQty + " шт." : ""], ["Страна производства", r.country], ["Альтернативная страна производства", r.countryAlt]]]
+  ].map(([t, items]) => `<section class="pm-sec"><h3>${t}</h3><div class="pm-grid">${items.map(([k, v, w]) => { const val = n(v); return `<div class="pm-f${w ? " wide" : ""}"><span>${k}</span><p class="${val === DASH ? "nil" : ""}">${esc(val)}</p></div>` }).join("")}</div></section>`).join("");
+}
+async function openProduct(id){
+  const ru = await loadRu();
+  let p = st.products.find(x => x.id === id); if (!p) return;
+  document.querySelectorAll(".pm-bg").forEach(x => x.remove());
+  const bg = document.createElement("div"); bg.className = "pm-bg";
+  bg.innerHTML = `<div class="pm" role="dialog" aria-modal="true" aria-labelledby="pmTitle"><div class="pm-handle"></div><div id="pmBody"></div></div>`;
+  document.body.append(bg); document.body.style.overflow = "hidden";
+  const close = () => { bg.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); afterModal() };
+  const onKey = e => { if (e.key === "Escape") close() };
+  document.addEventListener("keydown", onKey);
+  bg.onclick = e => { if (e.target === bg) close() };
+  const draw = () => {
+    const r = ru[p.sku] || {}, q = st.cart[p.id] || 0;
+    const vars = st.products.filter(x => x.base === p.base).sort((a, b) => a.volNum - b.volNum);
+    const lead = String(r.desc || "").split("\n")[0];
+    $("#pmBody").innerHTML = `
+      <div class="pm-head">
+        <div class="pm-photo">${p.img ? `<img src="${esc(p.img)}" alt="">` : ""}</div>
+        <div class="pm-main">
+          <div class="pm-top"><span class="pm-eyebrow">${esc(p.line)} · ${esc(p.type)}</span><button class="pm-x" type="button" aria-label="Закрыть">${ico("close")}</button></div>
+          <h2 id="pmTitle">${esc(p.base)}</h2>
+          ${lead ? `<p class="pm-lead">${esc(lead)}</p>` : ""}
+          <p class="pm-meta num">SKU ${esc(p.sku)}${p.status ? " · " + esc(p.status) : ""}${r.country ? " · Страна производства: " + esc(r.country) : ""}</p>
+          <div class="pm-vols">${vars.map(v => `<button type="button" class="chip" data-var="${v.id}" aria-pressed="${v.id === p.id}">${esc(v.vol)}</button>`).join("")}${stockPill(p)}</div>
+          <div class="pm-buy${q ? " incart" : ""}">
+            <div class="pr num"><b>${money(priceOf(p))}</b> <small>с НДС</small><div class="sub">${money(netOf(p))} без НДС · РРЦ ${money(p.rrp)}</div></div>
+            <div class="pm-qs">${stepper(p, q, "m")}<div class="vsum num${q ? "" : " zero"}">${q ? money(priceOf(p) * q) : "—"}</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pm-body">${cardSections(p, r)}</div>`;
+    bg.querySelector(".pm-x").onclick = close;
+    bg.querySelectorAll("[data-var]").forEach(b => b.onclick = () => { p = st.products.find(x => x.id === b.dataset.var); draw() });
+    bindSteppers($("#pmBody"), "m", () => { updateTopCart(); const keep = $("#pmBody").parentElement.scrollTop; draw(); $("#pmBody").parentElement.scrollTop = keep });
+  };
+  draw();
+  bg.querySelector(".pm-x")?.focus();
+}
+function afterModal(){
+  const h = location.hash;
+  if (h.startsWith("#/catalog") && $("#cards")) drawCards();
+  else if (h.startsWith("#/cart")) renderCart();
+  updateTopCart();
 }
 
 /* ============================================================
@@ -647,8 +716,8 @@ function renderCart(){
 }
 function clineHtml(p, q){
   return `<div class="cline">
-    <div class="im">${p.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : `<div class="thumb-ph"></div>`}</div>
-    <div class="tx"><div class="nm">${esc(p.base)}, ${esc(p.vol)}</div><div class="sk num">${esc(p.sku)} · <b>${money(priceOf(p))}</b> за шт.</div></div>
+    <button type="button" class="im" data-open="${p.id}" aria-label="Карточка товара">${p.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : `<div class="thumb-ph"></div>`}</button>
+    <div class="tx"><button type="button" class="nm open-link" data-open="${p.id}">${esc(p.base)}, ${esc(p.vol)}</button><div class="sk num">${esc(p.sku)} · <b>${money(priceOf(p))}</b> за шт.</div></div>
     <div class="stw">${stepper(p, q, "k")}</div>
     <div class="s num">${money(priceOf(p) * q)}</div>
     <button class="rm" type="button" data-rm="${p.id}" aria-label="Удалить позицию">${ico("close")}</button>
@@ -705,9 +774,21 @@ async function loadOrders(force){
 }
 const S = o => STATUS[o.status] || STATUS["Новый"];
 const prodOf = id => st.products.find(p => p.id === id);
-function thumbsHtml(o, max = 6){
+function fitThumbs(){
+  document.querySelectorAll(".thumbs").forEach(box => {
+    const items = [...box.querySelectorAll(".tm")], more = box.querySelector(".more");
+    items.forEach(i => i.hidden = false); more.hidden = true;
+    const W = box.clientWidth, step = 36, moreW = 40;
+    if (items.length * step <= W) return;
+    const cap = Math.max(1, Math.floor((W - moreW) / step));
+    items.forEach((i, k) => i.hidden = k >= cap);
+    more.textContent = "+" + (items.length - cap); more.hidden = false;
+  });
+}
+window.addEventListener("resize", () => { clearTimeout(window._ft); window._ft = setTimeout(fitThumbs, 100) });
+function thumbsHtml(o){
   const imgs = o.lines.map(l => prodOf(l.pid)?.img).filter(Boolean);
-  return `<div class="thumbs">${imgs.slice(0, max).map(u => `<span class="tm"><img src="${esc(u)}" alt="" loading="lazy"></span>`).join("")}${imgs.length > max ? `<span class="more">+${imgs.length - max}</span>` : ""}</div>`;
+  return `<div class="thumbs">${imgs.map(u => `<span class="tm"><img src="${esc(u)}" alt="" loading="lazy"></span>`).join("")}<span class="more" hidden></span></div>`;
 }
 const units = o => o.lines.reduce((s, l) => s + l.qty, 0);
 async function renderOrders(){
@@ -751,6 +832,7 @@ function drawOrders(){
     </a>`).join("")}
   </div>
   <p class="hint" style="margin-top:12px">Показано ${list.length} из ${st.orders.length}</p>`;
+  fitThumbs();
 }
 async function renderOrder(id){
   shell("orders", [["Главная", "#/home"], ["Заказы", "#/orders"], ["…"]], `<div class="skel" style="height:44px;width:320px;margin-bottom:16px"></div><div class="skel" style="height:160px"></div>`);
@@ -792,8 +874,8 @@ async function renderOrder(id){
     <div class="tbl otable">
       <div class="tbl-h"><span class="num">${o.lines.length} ${plural(o.lines.length, "позиция", "позиции", "позиций")} · ${units(o)} ед.</span><span style="text-align:right">Количество × цена</span><span>Сумма</span></div>
       ${o.lines.map(l => { const p = prodOf(l.pid); return `<div class="oline">
-        <div class="im">${p?.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : ""}</div>
-        <div class="nm">${p ? `${esc(p.base)}, ${esc(p.vol)}` : esc(l.title)}<span class="num">${esc(p?.sku || "")}</span></div>
+        <div class="im">${p?.img ? `<button type="button" data-open="${p.id}" aria-label="Карточка товара"><span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span></button>` : ""}</div>
+        <div class="nm">${p ? `<button type="button" class="open-link" data-open="${p.id}">${esc(p.base)}, ${esc(p.vol)}</button>` : esc(l.title)}<span class="num">${esc(p?.sku || "")}</span></div>
         <div class="q num">${l.qty} × ${money(l.price)}</div>
         <div class="s num">${money(l.sum)}</div></div>` }).join("") || `<div class="oline"><div></div><div class="hint">Позиции не найдены</div></div>`}
     </div>`);
@@ -808,4 +890,5 @@ async function renderOrder(id){
   };
 }
 
+document.addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (b){ e.preventDefault(); openProduct(b.dataset.open) } });
 boot();
