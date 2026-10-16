@@ -506,3 +506,5 @@ button.im{display:block}
 .vrow .stw,.vrow .vsum{cursor:default}
 .vrow:hover{background:#FAFBFB}
 .pcard-h:hover h3 .open-link{text-decoration:underline;text-underline-offset:3px}
+.oline[data-row]{cursor:pointer}
+.oline[data-row]:hover{background:#FAFBFB}

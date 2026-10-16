@@ -878,7 +878,7 @@ async function renderOrder(id){
     </div>
     <div class="tbl otable">
       <div class="tbl-h"><span class="num">${o.lines.length} ${plural(o.lines.length, "позиция", "позиции", "позиций")} · ${units(o)} ед.</span><span style="text-align:right">Количество × цена</span><span>Сумма</span></div>
-      ${o.lines.map(l => { const p = prodOf(l.pid); return `<div class="oline">
+      ${o.lines.map(l => { const p = prodOf(l.pid); return `<div class="oline"${p ? ` data-row="${p.id}"` : ""}>
         <div class="im">${p?.img ? `<button type="button" data-open="${p.id}" aria-label="Карточка товара"><span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span></button>` : ""}</div>
         <div class="nm">${p ? `<button type="button" class="open-link" data-open="${p.id}">${esc(p.base)}, ${esc(p.vol)}</button>` : esc(l.title)}<span class="num">${esc(p?.sku || "")}</span></div>
         <div class="q num">${l.qty} × ${money(l.price)}</div>
@@ -898,7 +898,7 @@ async function renderOrder(id){
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-open]"); if (b){ e.preventDefault(); return openProduct(b.dataset.open) }
   if (e.target.closest(".stw,.vsum,[data-tip],.ptot")) return;
-  const row = e.target.closest(".vrow[data-row]"); if (row) return openProduct(row.dataset.row);
+  const row = e.target.closest(".vrow[data-row],.oline[data-row]"); if (row) return openProduct(row.dataset.row);
   const hd = e.target.closest(".pcard-h"); if (hd){ const l = hd.querySelector("[data-open]"); if (l) openProduct(l.dataset.open) }
 });
 boot();
