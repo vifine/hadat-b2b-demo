@@ -131,36 +131,76 @@ async function create(tableId, records){
 }
 
 /* ---------- загрузка ---------- */
-async function boot(){
-  if (!KEY) return renderKey();
-  renderLoading();
-  try {
-    const [p, g, c] = await Promise.all([
-      listAll(T.prod.id, Object.values(T.prod).filter(x => x !== T.prod.id)),
-      listAll(T.grp.id, [T.grp.name, T.grp.disc]),
-      listAll(T.cli.id, [T.cli.company, T.cli.inn, T.cli.city, T.cli.contact, T.cli.email, T.cli.phone, T.cli.access, T.cli.group])
-    ]);
-    const F = T.prod;
-    st.products = p.map(r => {
-      const name = r.f[F.name] || "";
-      const base = name.split(",")[0].trim();
-      const ph = (r.f[F.photo] || [])[0];
-      return {
-        id:r.id, name, base, sku:String(r.f[F.sku] || ""), ean:r.f[F.ean] || "",
-        line:title(r.f[F.line]), type:cap(String(r.f[F.type] || "").trim()), vol:volRu(r.f[F.vol]),
-        volNum:parseFloat(r.f[F.vol]) || 0,
-        rrp:+r.f[F.rrp] || 0, status:sel(r.f[F.status]), stock:+r.f[F.stock] || 0,
-        img:ph?.thumbnails?.large?.url || ph?.url || ""
-      };
-    }).filter(x => x.name && x.rrp);
-    g.forEach(r => st.groups[r.id] = {name:r.f[T.grp.name] || "—", disc:+r.f[T.grp.disc] || 0});
-    const C = T.cli;
-    st.clients = c.map(r => ({id:r.id, company:r.f[C.company], inn:r.f[C.inn], city:r.f[C.city], contact:r.f[C.contact], email:r.f[C.email], phone:r.f[C.phone], access:sel(r.f[C.access]), group:ids(r.f[C.group])[0]}));
+const BOOT_CACHE = "hadat_b2b_boot_v1";
+let bootP = Promise.resolve();
+async function fetchBoot(){
+  const [p, g, c] = await Promise.all([
+    listAll(T.prod.id, Object.values(T.prod).filter(x => x !== T.prod.id)),
+    listAll(T.grp.id, [T.grp.name, T.grp.disc]),
+    listAll(T.cli.id, [T.cli.company, T.cli.inn, T.cli.city, T.cli.contact, T.cli.email, T.cli.phone, T.cli.access, T.cli.group])
+  ]);
+  return {p, g, c, t:Date.now()};
+}
+function applyBoot({p, g, c}, first){
+  const F = T.prod;
+  st.products = p.map(r => {
+    const name = r.f[F.name] || "";
+    const base = name.split(",")[0].trim();
+    const ph = (r.f[F.photo] || [])[0];
+    return {
+      id:r.id, name, base, sku:String(r.f[F.sku] || ""), ean:r.f[F.ean] || "",
+      line:title(r.f[F.line]), type:cap(String(r.f[F.type] || "").trim()), vol:volRu(r.f[F.vol]),
+      volNum:parseFloat(r.f[F.vol]) || 0,
+      rrp:+r.f[F.rrp] || 0, status:sel(r.f[F.status]), stock:+r.f[F.stock] || 0,
+      img:ph?.thumbnails?.large?.url || ph?.url || ""
+    };
+  }).filter(x => x.name && x.rrp);
+  st.groups = {};
+  g.forEach(r => st.groups[r.id] = {name:r.f[T.grp.name] || "—", disc:+r.f[T.grp.disc] || 0});
+  const C = T.cli;
+  st.clients = c.map(r => ({id:r.id, company:r.f[C.company], inn:r.f[C.inn], city:r.f[C.city], contact:r.f[C.contact], email:r.f[C.email], phone:r.f[C.phone], access:sel(r.f[C.access]), group:ids(r.f[C.group])[0]}));
+  if (first){
     const saved = store.get("hadat_b2b_client");
     const cl = st.clients.find(x => x.id === saved && x.access === "Одобрен");
     if (cl) setClient(cl);
-    window.addEventListener("hashchange", route);
-    route();
+  } else if (st.client){
+    const cl = st.clients.find(x => x.id === st.client.id);
+    if (cl) st.client = cl;
+  }
+}
+function startApp(){
+  window.addEventListener("hashchange", route);
+  route();
+  const idle = window.requestIdleCallback || (f => setTimeout(f, 800));
+  idle(() => loadRu());
+}
+function softRefresh(){
+  const busy = document.querySelector(".pm-bg, .confirm-bg, dialog[open]") || (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName));
+  if (busy || !st.client) return;
+  const a = location.hash.replace(/^#\/?/, "").split("/")[0];
+  if (["home", "catalog", "cart"].includes(a)){ const y = window.scrollY; route(); window.scrollTo(0, y) }
+}
+async function boot(){
+  if (!KEY) return renderKey();
+  const cached = store.get(BOOT_CACHE);
+  if (cached && cached.p && Date.now() - cached.t < 12 * 3600e3){
+    applyBoot(cached, true); startApp();
+    fetchBoot().then(d => { store.set(BOOT_CACHE, d); applyBoot(d, false); softRefresh() }).catch(() => {});
+    return;
+  }
+  const pub = !store.get("hadat_b2b_client");
+  if (pub){
+    // экран входа не ждёт каталог: данные догружаются в фоне
+    bootP = fetchBoot().then(d => { store.set(BOOT_CACHE, d); applyBoot(d, false) });
+    bootP.catch(e => { if (e?.code === "bad_key" || e?.code === "forbidden") renderKey(errText(e)) });
+    startApp();
+    return;
+  }
+  renderLoading();
+  try {
+    const d = await fetchBoot();
+    store.set(BOOT_CACHE, d);
+    applyBoot(d, true); startApp();
   } catch(e){
     if (e?.code === "bad_key" || e?.code === "forbidden") return renderKey(errText(e));
     renderFatal(e);
@@ -170,6 +210,7 @@ function setClient(c){
   st.client = c; store.set("hadat_b2b_client", c.id);
   st.cart = store.get("hadat_b2b_cart_" + c.id) || {};
   st.orders = null; st.lines = null;
+  setTimeout(() => { if (st.client === c) loadOrders().catch(() => {}) }, 300);
 }
 
 /* ---------- маршруты ---------- */
@@ -212,7 +253,7 @@ function authLayout({hero, body, after = ""}){
     <header class="auth-head">
       <img class="logo-main" src="assets/logo-main.svg" alt="HADAT Cosmetics">
     </header>
-    <img class="auth-products" src="assets/hero-products.png" alt="">
+    <img class="auth-products" src="assets/hero-products.webp" alt="">
     <div class="auth-body">
       <div class="auth-pitch">
         <h1 class="h-display">Кабинет партнёра</h1>
@@ -286,7 +327,7 @@ function renderLogin(){
     b.disabled = true; b.textContent = "Проверяем…"; err.hidden = true;
     try {
       const U = T.user;
-      const users = await listAll(U.id, [U.login, U.pass, U.client, U.active]);
+      const [users] = await Promise.all([listAll(U.id, [U.login, U.pass, U.client, U.active]), bootP]);
       const u = users.find(r => String(r.f[U.login] || "").trim().toLowerCase() === lg && String(r.f[U.pass] || "") === pw);
       if (!u) throw {msg:"Неверный email или пароль."};
       if (!u.f[U.active]) throw {msg:"Учётная запись отключена. Обратитесь к менеджеру Hadat."};
@@ -313,7 +354,7 @@ function renderApply(){
         <div class="field"><label for="a_phone">Телефон *</label><input class="input" id="a_phone" type="tel" required autocomplete="tel"></div>
         <div class="field"><label for="a_email">Рабочий email *</label><input class="input" id="a_email" type="email" required autocomplete="email"></div>
         <div class="field"><label for="a_city">Город *</label><input class="input" id="a_city" required></div>
-        <div class="field"><label for="a_inn">ИНН · необязательно</label><input class="input" id="a_inn" inputmode="numeric" pattern="\\d{10}|\\d{12}"></div>
+        <div class="field"><label for="a_inn">ИНН</label><input class="input" id="a_inn" placeholder="необязательно" inputmode="numeric" pattern="\\d{10}|\\d{12}"></div>
         <div class="field"><label for="a_comment">Комментарий</label><input class="input" id="a_comment"></div>
       </div>
       <label class="check"><input type="checkbox" id="a_agree" required checked> Согласна на обработку персональных данных</label>
@@ -689,7 +730,7 @@ async function openProduct(id){
   const close = () => { bg.remove(); document.body.style.overflow = ""; document.removeEventListener("keydown", onKey); afterModal() };
   const onKey = e => { if (e.key === "Escape") close() };
   document.addEventListener("keydown", onKey);
-  bg.onclick = e => { if (e.target === bg) close() };
+  bg.onclick = e => { if (e.target === bg || e.target.classList.contains("pm-handle")) close() };
   const draw = () => {
     const r = ru[p.sku] || {}, q = st.cart[p.id] || 0;
     const vars = st.products.filter(x => x.base === p.base).sort((a, b) => a.volNum - b.volNum);
@@ -804,8 +845,15 @@ async function sendOrder(L){
 /* ============================================================
    ЗАКАЗЫ
    ============================================================ */
-async function loadOrders(force){
-  if (st.orders && st.lines && !force) return;
+let ordP = null;
+function loadOrders(force){
+  if (st.orders && st.lines && !force) return Promise.resolve();
+  if (ordP && !force) return ordP;
+  const cid = st.client?.id;
+  ordP = fetchOrders(cid).finally(() => { ordP = null });
+  return ordP;
+}
+async function fetchOrders(cid){
   const O = T.ord, LN = T.line;
   const [all, lines] = await Promise.all([
     listAll(O.id, [O.num, O.date, O.status, O.comment, O.client, O.lines, O.total]),
@@ -817,7 +865,7 @@ async function loadOrders(force){
     const qty = +r.f[LN.qty] || 0, price = +r.f[LN.price] || 0;
     (st.lines[oid] ||= []).push({title:r.f[LN.title] || "", qty, price, sum:+r.f[LN.sum] || qty * price, pid:ids(r.f[LN.product])[0]});
   }
-  st.orders = all.filter(r => ids(r.f[O.client]).includes(st.client.id)).map(r => {
+  st.orders = all.filter(r => ids(r.f[O.client]).includes(cid)).map(r => {
     const L = st.lines[r.id] || [];
     const total = +r.f[O.total] || L.reduce((s, l) => s + l.sum, 0);
     return {id:r.id, num:r.f[O.num], date:r.f[O.date], status:sel(r.f[O.status]) || "Новый", comment:r.f[O.comment] || "", lines:L, total};
@@ -847,7 +895,7 @@ async function renderOrders(){
   shell("orders", [["Главная", "#/home"], ["Заказы"]], `
     <div class="page-head"><h1 class="h-display">Заказы</h1><span class="orders-sum num" id="osum"></span></div>
     <div class="chiprow" role="group" aria-label="Статус" id="otabs"></div>
-    <div class="toolbar" style="margin-top:6px"><div class="search">${ico("search")}<input class="input" type="search" id="oq" placeholder="№ заказа, артикул или название товара" value="${esc(st.of.q)}" aria-label="Поиск заказов"></div>
+    <div class="toolbar" style="margin-top:6px"><div class="search">${ico("search")}<input class="input" type="search" id="oq" placeholder="№ заказа, артикул или товар" value="${esc(st.of.q)}" aria-label="Поиск заказов"></div>
       <button class="link-btn" id="oreload" type="button">Обновить</button></div>
     <div id="olist"><div class="skel" style="height:60px;margin-bottom:8px"></div><div class="skel" style="height:60px;margin-bottom:8px"></div><div class="skel" style="height:60px"></div></div>`);
   $("#oreload").onclick = async () => { st.orders = null; renderOrders() };
