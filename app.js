@@ -232,6 +232,10 @@ function authLayout({hero, body, after = ""}){
   if (hb) hb.onclick = e => { e.preventDefault(); $("#auth-card").scrollIntoView({behavior:"smooth"}) };
 }
 function renderLoading(){
+  if (store.get("hadat_b2b_client")){
+    root.innerHTML = `<div class="boot"><img src="assets/favicon.svg" alt="HADAT"><div class="skel"></div></div>`;
+    return;
+  }
   authLayout({body:`<div class="card-glass"><div class="eyebrow">Личный кабинет</div><h2 class="h-display">Добро пожаловать</h2><div class="skel" style="height:44px"></div><p class="demo-note">Подключаемся к тестовой базе…</p></div>`});
 }
 function renderKey(msg){

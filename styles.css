@@ -508,3 +508,6 @@ button.im{display:block}
 .pcard-h:hover h3 .open-link{text-decoration:underline;text-underline-offset:3px}
 .oline[data-row]{cursor:pointer}
 .oline[data-row]:hover{background:#FAFBFB}
+.boot{min-height:100vh;display:grid;place-content:center;justify-items:center;gap:20px}
+.boot img{width:56px;height:56px}
+.boot .skel{width:160px;height:4px}
