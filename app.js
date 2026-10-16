@@ -519,12 +519,13 @@ function renderCatalog(){
       <div class="search">${ico("search")}<input class="input" type="search" id="q" placeholder="Название или артикул" value="${esc(st.f.q)}" aria-label="Поиск по каталогу"></div>
       <label class="check"><input type="checkbox" id="inStock" ${st.f.inStock ? "checked" : ""}> Только в наличии</label>
       <label class="check"><input type="checkbox" id="isNew" ${st.f.isNew ? "checked" : ""}> Новинки</label>
+      <button class="btn btn-blue btn-sm reset-f" id="resetF" type="button" hidden>${ico("close")} Сбросить фильтры</button>
       <div class="meta"><span>${esc(grp().name)} · скидка <b class="num">${Math.round(grp().disc * 100)}%</b></span><span id="cnt" class="num"></span>
         <select class="input" id="sort" style="height:32px;width:auto;font-size:13px" aria-label="Сортировка"><option value="sku" ${st.f.sort === "sku" ? "selected" : ""}>По артикулу</option><option value="name" ${st.f.sort === "name" ? "selected" : ""}>По названию</option></select></div>
     </div>
     <div class="chiprow" role="group" aria-label="Категория"><span class="lbl">Категория</span>${chips("type", types, "Все")}</div>
     <div class="chiprow" role="group" aria-label="Линия"><span class="lbl">Линия</span>${chips("line", lines, "Все линии")}</div>
-    <div class="cols"><span>Объём</span><span>Цена партнёра</span><span>Наличие</span><span>Количество · Сумма</span></div>
+    <div class="cols"><span>Объём</span><span>Оптовая цена</span><span>Наличие</span><span>Количество · Сумма</span></div>
     <div id="cards"></div>`);
   $("#q").oninput = e => { st.f.q = e.target.value; drawCards() };
   $("#inStock").onchange = e => { st.f.inStock = e.target.checked; drawCards() };
@@ -562,6 +563,7 @@ function setQty(p, q){
 }
 function drawCards(){
   const list = filtered(), G = groupsOf(list);
+  const rf = $("#resetF"); if (rf){ const f = st.f; rf.hidden = !(f.q.trim() || f.type || f.line || f.inStock || f.isNew); rf.onclick = () => { st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false}; renderCatalog() } }
   const units = cartLines().reduce((s, x) => s + x.q, 0);
   $("#cnt").textContent = `${G.length} ${plural(G.length, "товар", "товара", "товаров")} · ${list.length} ${plural(list.length, "вариация", "вариации", "вариаций")}${units ? ` · ${units} ед. в корзине` : ""}`;
   const box = $("#cards");
