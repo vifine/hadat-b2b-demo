@@ -1,3 +1,3 @@
 // Ключ Airtable для демо (персональный токен с доступом только к базе «Hadat B2B Portal — MVP (тест)»).
 // Вставьте токен между кавычками. Если оставить пустым, страница попросит ключ при первом входе.
-window.HADAT_DEMO_KEY = "";
+window.HADAT_DEMO_KEY = "patBUbKMKfvwJeGTk.dd7a380b9477e3812e252ad01174e115dc4027f346e9532aa491ddad64af7383";
