@@ -502,3 +502,7 @@ button.im{display:block}
 .new-b{display:inline-flex;align-items:center;height:20px;padding:0 8px;margin-left:10px;border-radius:10px;background:#25D366;color:#fff;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;vertical-align:3px;white-space:nowrap}
 .reset-f .ico{width:16px;height:16px}
 .reset-f .ico{width:16px;height:16px}
+.vrow,.pcard-h{cursor:pointer}
+.vrow .stw,.vrow .vsum{cursor:default}
+.vrow:hover{background:#FAFBFB}
+.pcard-h:hover h3 .open-link{text-decoration:underline;text-underline-offset:3px}

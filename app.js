@@ -895,5 +895,10 @@ async function renderOrder(id){
   };
 }
 
-document.addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (b){ e.preventDefault(); openProduct(b.dataset.open) } });
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-open]"); if (b){ e.preventDefault(); return openProduct(b.dataset.open) }
+  if (e.target.closest(".stw,.vsum,[data-tip],.ptot")) return;
+  const row = e.target.closest(".vrow[data-row]"); if (row) return openProduct(row.dataset.row);
+  const hd = e.target.closest(".pcard-h"); if (hd){ const l = hd.querySelector("[data-open]"); if (l) openProduct(l.dataset.open) }
+});
 boot();
