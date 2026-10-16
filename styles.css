@@ -62,13 +62,14 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .err{background:#F8E2E4;color:#9B3542;border-radius:4px;padding:10px 12px;font-size:13px}
 
 /* ============ AUTH ============ */
-.auth{min-height:100vh;min-height:100dvh;background:linear-gradient(90deg,#c5b4a7 0%,#c1b0a3 30%,#b9a89b 100%);display:flex;flex-direction:column;position:relative}
+.auth{overflow:hidden;min-height:100vh;min-height:100dvh;background:linear-gradient(90deg,#c5b4a7 0%,#c1b0a3 30%,#b9a89b 100%);display:flex;flex-direction:column;position:relative}
+html:has(.auth),body:has(.auth){background:#BFAEA1}
 .auth-head{display:flex;align-items:center;justify-content:space-between;padding:18px 80px;width:100%;max-width:1440px;margin:0 auto;box-sizing:border-box;position:relative;z-index:1}
 .auth-head .logo-main{height:64px;width:auto}
 .auth-head .tag{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2)}
 .auth-body{flex:1;display:grid;grid-template-columns:460px minmax(0,720px);gap:100px;padding:24px 80px 0;align-items:stretch;justify-content:center}
 .auth-pitch{display:flex;flex-direction:column;gap:20px;padding-top:8px;min-height:0;position:relative;z-index:1}
-.auth-products{position:absolute;z-index:-1;left:-40px;bottom:0;top:330px;width:calc(100% + 120px);max-width:640px;height:auto;object-fit:contain;object-position:left bottom;--m1:linear-gradient(0deg,transparent 0,#000 7%,#000 70%,transparent 100%);--m2:linear-gradient(90deg,transparent 0,#000 18%,#000 70%,transparent 100%);-webkit-mask-image:var(--m1),var(--m2);-webkit-mask-composite:source-in;mask-image:var(--m1),var(--m2);mask-composite:intersect}
+.auth-products{position:absolute;z-index:-1;left:-40px;bottom:0;top:330px;width:calc(100% + 120px);max-width:640px;height:auto;object-fit:contain;object-position:left bottom;-webkit-mask-image:radial-gradient(ellipse 64% 60% at 48% 56%,#000 72%,transparent 100%);mask-image:radial-gradient(ellipse 64% 60% at 48% 56%,#000 72%,transparent 100%);-webkit-mask-size:100% 100%;mask-size:100% 100%}
 .auth-pitch h1{font-size:56px;white-space:nowrap}
 .auth-pitch .desc{font-size:18px;color:var(--text-2);margin:0}
 .benefits{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:20px}
@@ -103,6 +104,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 }
 @media (max-width:860px){
   .auth{background:var(--page)}
+  html:has(.auth),body:has(.auth){background:var(--page)}
   .auth-head{display:none}
   .auth-hero{display:flex;flex-direction:column;min-height:100vh;min-height:100svh;background:#C9B8AA url(assets/hero-mobile.jpg) center bottom/cover no-repeat}
   .auth-hero .top{padding:16px 24px}
