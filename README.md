@@ -1,17 +1,19 @@
 # Hadat B2B Portal — demo
 
-Interface demo for the Hadat B2B partner portal (MVP). This is not a production tool.
+Interface demo for the Hadat B2B partner portal (MVP), built from the Figma mockups "Hadat B2B портал". This is not a production tool.
 
-- One page, `index.html`, served via GitHub Pages at https://hadat-b2b.vifine.tech
-- Data: test Airtable base "Hadat B2B Portal — MVP (тест)", with tables for products, price groups, clients, orders and order lines. All clients are fictitious; stock levels and discounts are test values.
-- Access: the Airtable key (a token scoped to the test base, `data.records:read` and `data.records:write`) goes into `config.js`. If `config.js` is empty, the page asks for the key on first open. Login uses the test users from the "Пользователи портала" table, for example salon@test.example / demo-salon. All data in the base is test data.
+- Served via GitHub Pages at https://hadat-b2b.vifine.tech
+- Files: `index.html` (shell), `styles.css`, `app.js`, `assets/` (logos, login photo), `config.js` (Airtable key)
+- Data: test Airtable base "Hadat B2B Portal — MVP (тест)" — products, price groups, clients, portal users, orders and order lines. All clients are fictitious; stock levels and discounts are test values.
+- Access: put an Airtable token scoped to the test base (`data.records:read`, `data.records:write`) into `config.js`. If it is empty, the page asks for the key on first open and keeps it only in that browser. Test login: salon@test.example / demo-salon.
 
-What the demo covers:
-- access request
-- demo login as a client
-- catalog with the price group's prices, case-pack multiples and stock
-- cart with minimum order amount
-- order submission
-- order history with statuses
+Screens:
+- login, access request, "request received" (desktop: photo background; mobile: first screen with photo and a button that scrolls to the form)
+- catalog grouped by product with variants: partner price with VAT (net and RRP below), stock (В наличии / Мало / Нет в наличии), quantity stepper limited by stock, category and line filters
+- cart with clear-cart confirmation, VAT breakdown, savings vs RRP, comment, order submission
+- orders journal with status stripes, thumbnails and filters; separate order page with totals and "repeat order"
+- collapsible side menu; on mobile it slides in from the right
+
+Order statuses shown: На согласовании (Новый in the base), Подтверждён (Подтверждён / Собирается / Отгружен), Доставлен, Отменён. Orders ship only from stock, so there is no multiplicity or minimum order.
 
 In the production version, data lives on a server in Russia and clients and orders live in Bitrix24.
