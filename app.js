@@ -791,6 +791,7 @@ function fitThumbs(){
   });
 }
 window.addEventListener("resize", () => { clearTimeout(window._ft); window._ft = setTimeout(fitThumbs, 100) });
+document.addEventListener("transitionend", e => { if (e.target.id === "shell") fitThumbs() });
 function thumbsHtml(o){
   const imgs = o.lines.map(l => prodOf(l.pid)?.img).filter(Boolean);
   return `<div class="thumbs">${imgs.map(u => `<span class="tm"><img src="${esc(u)}" alt="" loading="lazy"></span>`).join("")}<span class="more" hidden></span></div>`;

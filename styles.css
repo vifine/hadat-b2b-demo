@@ -142,9 +142,9 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .side .spacer{flex:1}
 /* по умолчанию меню свёрнуто, раскрывается при наведении поверх контента */
 @media (min-width:861px){
-  .shell{grid-template-columns:72px minmax(0,1fr)}
-  .side{width:72px;transition:width .2s ease,box-shadow .2s ease}
-  .side:hover,.side:focus-within{width:264px;box-shadow:8px 0 24px rgba(48,37,38,.18)}
+  .shell{grid-template-columns:72px minmax(0,1fr);transition:grid-template-columns .2s ease}
+  .shell:has(.side:hover),.shell:has(.side:focus-within){grid-template-columns:264px minmax(0,1fr)}
+  .side{width:100%}
   .side-top{padding:0 18px;justify-content:flex-start}
   .side-top .logo-b2b{display:none}
   .side-top .logo-sq{display:block}
