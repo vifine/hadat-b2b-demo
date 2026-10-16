@@ -445,7 +445,13 @@ html:has(.auth),body:has(.auth){background:#BFAEA1}
 .promo-card p{margin:0;font-size:14px;line-height:1.5;opacity:.92}
 .promo-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:6px}
 .promo-btn{background:#FEFCF7;color:var(--brown);height:40px}
-.promo-btn:hover{background:#fff}
+.promo-btn{position:static;transition:background .2s,color .2s,transform .2s}
+.promo-btn::after{content:"";position:absolute;inset:0;z-index:1}
+.promo-btn:focus-visible{outline:2px solid #FEFCF7;outline-offset:2px}
+.promo-card{cursor:pointer}
+.promo-img img{transition:transform .6s ease}
+.promo-card:hover .promo-img img{transform:scale(1.04)}
+.promo-card:hover .promo-btn{background:var(--brown);color:var(--beige-photo)}
 .promo-soon{font-size:12px;opacity:.8}
 .promo-dots{display:none;justify-content:center;gap:8px;margin-top:12px}
 .promo-dots button{width:8px;height:8px;border-radius:50%;background:var(--border)}
