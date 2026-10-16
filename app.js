@@ -441,6 +441,7 @@ function shell(active, crumbs, html, opts = {}){
     <aside class="side" aria-label="Меню">
       <div class="side-top">
         <a href="#/home" aria-label="На главную"><img class="logo-b2b" src="assets/logo-b2b.svg" alt="HADAT B2B-портал"><img class="logo-sq" src="assets/favicon.svg" alt="HADAT"></a>
+        <div class="side-acc"><span class="avatar">${esc(initials(c.contact || c.company))}</span><span class="n"><b>${esc(c.company)}</b><span>№ ${esc(clientNo())} · ${esc(c.contact || "")}</span><span>${esc(grp().name)} · скидка ${Math.round(grp().disc * 100)}%</span></span></div>
         <button class="close-btn" id="closeMenu" type="button" aria-label="Закрыть меню">${ico("close")}</button>
       </div>
       <nav class="nav">${NAV.filter(i => !i.hidden).map(i => `<a href="#/${i.k}" ${i.k === active ? 'aria-current="page"' : ""} title="${i.t}">${ico(i.i)}<span>${i.t}</span></a>`).join("")}</nav>
