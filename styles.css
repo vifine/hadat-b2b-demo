@@ -499,4 +499,4 @@ button.im{display:block}
   .pm-grid{grid-template-columns:1fr}
 }
 
-.new-b{display:inline-flex;align-items:center;height:20px;padding:0 8px;margin-left:10px;border-radius:10px;background:#3DB67A;color:#fff;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;vertical-align:3px;white-space:nowrap}
+.new-b{display:inline-flex;align-items:center;height:20px;padding:0 8px;margin-left:10px;border-radius:10px;background:#D6EEA0;color:#3F5A14;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;vertical-align:3px;white-space:nowrap}
