@@ -383,14 +383,12 @@ function shell(active, crumbs, html, opts = {}){
   const c = st.client;
   const showCat = active !== "catalog", showCart = active !== "cart";
   root.innerHTML = `
-  <div class="shell${st.collapsed ? " collapsed" : ""}" id="shell">
+  <div class="shell" id="shell">
     <aside class="side" aria-label="Меню">
       <div class="side-top">
         <a href="#/home" aria-label="На главную"><img class="logo-b2b" src="assets/logo-b2b.svg" alt="HADAT B2B-портал"><img class="logo-sq" src="assets/favicon.svg" alt="HADAT"></a>
-        <button class="collapse-btn" id="collapse" type="button" aria-label="Свернуть меню">${ico("collapse")}</button>
         <button class="close-btn" id="closeMenu" type="button" aria-label="Закрыть меню">${ico("close")}</button>
       </div>
-      <button class="expand-btn" id="expand" type="button" aria-label="Развернуть меню">${ico("expand")}</button>
       <nav class="nav">${NAV.map(i => `<a href="#/${i.k}" ${i.k === active ? 'aria-current="page"' : ""} title="${i.t}">${ico(i.i)}<span>${i.t}</span></a>`).join("")}</nav>
       <div class="spacer"></div>
       <nav class="nav"><a href="#" id="logout" title="Выйти">${ico("logout")}<span>Выйти</span></a></nav>
@@ -402,17 +400,22 @@ function shell(active, crumbs, html, opts = {}){
         <nav class="crumbs" aria-label="Навигация">${crumbs.map((x, i) => i < crumbs.length - 1 ? `<a href="${x[1]}">${esc(x[0])}</a><span>/</span>` : `<b>${esc(x[0])}</b>`).join("")}</nav>
         ${showCat ? `<a class="tb-link" href="#/catalog">${ico("catalog")}<span class="t">Каталог</span></a>` : ""}
         ${showCart ? `<a class="tb-link" href="#/cart">${ico("cart")}<span class="t">Корзина</span>${n ? `<span class="count num">${n}</span><span class="tb-sum num">${money(cartTotal())}</span>` : ""}</a>` : ""}
-        <div class="who"><div class="n"><b>${esc(c.company)}</b><span>№ ${esc(clientNo())} · ${esc(c.contact || "")}</span></div><span class="avatar">${esc(initials(c.contact || c.company))}</span></div>
+        <div class="who-wrap"><button class="who" id="who" type="button" aria-haspopup="menu" aria-expanded="false"><span class="n"><b>${esc(c.company)}</b><span>№ ${esc(clientNo())} · ${esc(c.contact || "")}</span></span><span class="avatar">${esc(initials(c.contact || c.company))}</span></button>
+          <div class="who-menu" id="whoMenu" role="menu" hidden>
+            <div class="wm-head"><b>${esc(c.company)}</b><span>${esc(c.contact || "")}${c.email ? " · " + esc(c.email) : ""}</span><span>${esc(grp().name)} · скидка ${Math.round(grp().disc * 100)}%</span></div>
+            <button type="button" role="menuitem" id="whoLogout">${ico("logout")} Выйти</button>
+          </div></div>
         <button class="burger" id="burger" type="button" aria-label="Открыть меню">${ico("menu")}</button>
       </header>
       <main class="content" id="content">${html}</main>
     </div>
   </div>`;
-  $("#collapse").onclick = () => { st.collapsed = true; store.set("hadat_side_collapsed", true); $("#shell").classList.add("collapsed") };
-  $("#expand").onclick = () => { st.collapsed = false; store.set("hadat_side_collapsed", false); $("#shell").classList.remove("collapsed") };
   $("#burger").onclick = () => $("#shell").classList.add("menu-open");
   $("#closeMenu").onclick = closeMenu; $("#scrim").onclick = closeMenu;
-  $("#logout").onclick = e => { e.preventDefault(); st.client = null; store.set("hadat_b2b_client", null); go("#/login") };
+  const doLogout = e => { e.preventDefault(); st.client = null; store.set("hadat_b2b_client", null); go("#/login") };
+  $("#logout").onclick = doLogout; $("#whoLogout").onclick = doLogout;
+  $("#who").onclick = e => { e.stopPropagation(); const m = $("#whoMenu"); m.hidden = !m.hidden; $("#who").setAttribute("aria-expanded", !m.hidden);
+    if (!m.hidden) setTimeout(() => document.addEventListener("click", function h(ev){ if (!m.contains(ev.target)){ m.hidden = true; $("#who")?.setAttribute("aria-expanded","false"); document.removeEventListener("click", h) } }), 0) };
   if (!opts.keepScroll) window.scrollTo({top:0});
 }
 function closeMenu(){ const s = $("#shell"); if (s) s.classList.remove("menu-open") }

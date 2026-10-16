@@ -138,15 +138,20 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .nav a[aria-current="page"]{background:rgba(48,37,38,.22)}
 .nav a[aria-current="page"]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--lb300)}
 .side .spacer{flex:1}
-.shell.collapsed .side-top{justify-content:center;padding:0}
-.shell.collapsed .side-top .logo-b2b{display:none}
-.shell.collapsed .side-top .logo-sq{display:block}
-.shell.collapsed .side-top .collapse-btn{display:none}
-.shell.collapsed .nav a{justify-content:center;padding:0}
-.shell.collapsed .nav a span{display:none}
-.shell.collapsed .expand-btn{display:grid}
-.expand-btn{display:none;margin:0 auto 12px;color:var(--side-text);width:32px;height:32px;place-items:center;border-radius:4px}
-.expand-btn:hover{background:rgba(255,255,255,.22)}
+/* по умолчанию меню свёрнуто, раскрывается при наведении поверх контента */
+@media (min-width:861px){
+  .shell{grid-template-columns:72px minmax(0,1fr)}
+  .side{width:72px;transition:width .2s ease,box-shadow .2s ease}
+  .side:hover,.side:focus-within{width:264px;box-shadow:8px 0 24px rgba(48,37,38,.18)}
+  .side-top{padding:0 18px;justify-content:flex-start}
+  .side-top .logo-b2b{display:none}
+  .side-top .logo-sq{display:block}
+  .side:hover .side-top .logo-b2b,.side:focus-within .side-top .logo-b2b{display:block}
+  .side:hover .side-top .logo-sq,.side:focus-within .side-top .logo-sq{display:none}
+  .side-top .collapse-btn{display:none}
+  .nav a span{opacity:0;transition:opacity .15s}
+  .side:hover .nav a span,.side:focus-within .nav a span{opacity:1}
+}
 .main{min-width:0;display:flex;flex-direction:column}
 .topbar{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--border-2);height:64px;display:flex;align-items:center;gap:28px;padding:0 32px}
 .crumbs{display:flex;gap:8px;font-size:13px;color:var(--text-2);margin-right:auto;min-width:0;white-space:nowrap}
@@ -157,7 +162,15 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .tb-link:hover span.t{text-decoration:underline;text-underline-offset:3px}
 .count{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:var(--lb300);color:var(--text);font-size:11px;font-weight:600}
 .tb-sum{font-weight:600}
-.who{display:flex;align-items:center;gap:10px;padding-left:28px;border-left:1px solid var(--border-2);height:40px}
+.who-wrap{position:relative;padding-left:28px;border-left:1px solid var(--border-2)}
+.who{display:flex;align-items:center;gap:10px;height:40px;border-radius:6px;padding:0 4px 0 8px}
+.who:hover{background:var(--subtle)}
+.who-menu{position:absolute;right:0;top:calc(100% + 10px);width:280px;background:#fff;border:1px solid var(--border-2);border-radius:6px;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:6px;z-index:30}
+.wm-head{display:grid;gap:2px;padding:10px 12px 12px;border-bottom:1px solid var(--border-2);margin-bottom:6px}
+.wm-head b{font-size:14px}
+.wm-head span{font-size:12px;color:var(--text-2)}
+.who-menu button{display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px;border-radius:4px;font-size:14px;font-weight:500}
+.who-menu button:hover{background:var(--subtle)}
 .who .n{text-align:right;line-height:1.2}
 .who .n b{display:block;font-size:13px}
 .who .n span{font-size:11px;color:var(--text-2)}
@@ -169,16 +182,14 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .scrim{display:none}
 
 @media (max-width:860px){
-  .shell,.shell.collapsed{grid-template-columns:1fr;--side-w:280px}
+  .shell{grid-template-columns:1fr;--side-w:280px}
   .side{position:fixed;left:auto;right:0;top:0;bottom:0;width:280px;height:100%;transform:translateX(100%);transition:transform .25s;box-shadow:-8px 0 24px rgba(48,37,38,.18)}
   .shell.menu-open .side{transform:none}
   .shell.menu-open .scrim{display:block;position:fixed;inset:0;background:rgba(29,29,27,.25);z-index:15}
   .side-top .collapse-btn{display:none}
   .side-top .close-btn{display:grid!important}
-  .shell.collapsed .nav a span{display:inline}
-  .shell.collapsed .nav a{justify-content:flex-start;padding:0 24px}
   .topbar{height:56px;padding:0 16px;gap:18px}
-  .crumbs,.who,.tb-link .t,.tb-sum{display:none}
+  .crumbs,.who-wrap,.tb-link .t,.tb-sum{display:none}
   .tb-logo{display:block!important;margin-right:auto}
   .burger{display:grid;place-items:center}
   .content{padding:20px 16px 48px}
