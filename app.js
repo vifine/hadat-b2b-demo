@@ -43,6 +43,7 @@ const P = {
   search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5V8"/>',
   trash:'<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/>',
   bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
@@ -417,12 +418,18 @@ function shell(active, crumbs, html, opts = {}){
         <button class="burger" id="burger" type="button" aria-label="Открыть меню">${ico("menu")}</button>
       </header>
       <main class="content" id="content">${html}</main>
+      <div class="chat-fab" id="chatFab">
+        <div class="chat-list" id="chatList" hidden>${MSG.map(m => `<button type="button" class="msg" aria-label="${m.n}" title="${m.n}"><svg viewBox="${m.vb}" aria-hidden="true"><path fill-rule="evenodd" d="${m.d}"/></svg></button>`).join("")}</div>
+        <button type="button" class="chat-btn" id="chatBtn" aria-label="Написать менеджеру" aria-expanded="false">${ico("chat")}</button>
+      </div>
     </div>
   </div>`;
   $("#burger").onclick = () => $("#shell").classList.add("menu-open");
   $("#closeMenu").onclick = closeMenu; $("#scrim").onclick = closeMenu;
   $("#ntfBtn").onclick = e => { e.stopPropagation(); const pop = $("#ntfPop"); if (!pop.hidden){ pop.hidden = true; return } drawNtf(); pop.hidden = false; $("#ntfBtn").setAttribute("aria-expanded","true");
     setTimeout(() => document.addEventListener("click", function h(ev){ if (!pop.contains(ev.target)){ pop.hidden = true; $("#ntfBtn")?.setAttribute("aria-expanded","false"); document.removeEventListener("click", h) } }), 0) };
+  $("#chatBtn").onclick = e => { e.stopPropagation(); const l = $("#chatList"); l.hidden = !l.hidden; $("#chatBtn").setAttribute("aria-expanded", !l.hidden); $("#chatBtn").innerHTML = ico(l.hidden ? "chat" : "close");
+    if (!l.hidden) setTimeout(() => document.addEventListener("click", function h(ev){ if (!$("#chatFab")?.contains(ev.target)){ l.hidden = true; $("#chatBtn") && ($("#chatBtn").innerHTML = ico("chat")); document.removeEventListener("click", h) } }), 0) };
   const doLogout = e => { e.preventDefault(); st.client = null; store.set("hadat_b2b_client", null); go("#/login") };
   $("#logout").onclick = doLogout; $("#whoLogout").onclick = doLogout;
   $("#who").onclick = e => { e.stopPropagation(); const m = $("#whoMenu"); m.hidden = !m.hidden; $("#who").setAttribute("aria-expanded", !m.hidden);
