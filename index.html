@@ -176,6 +176,7 @@ footer{padding-block:24px;border-top:1px solid var(--line);color:var(--muted);fo
 
 <footer><div class="wrap">Демо-версия B2B-портала Hadat. Каталог, клиенты и заказы читаются и записываются в тестовую базу Airtable «Hadat B2B Portal — MVP (тест)». Цены и остатки тестовые.</div></footer>
 
+<script src="config.js"></script>
 <script>
 const BASE = "appPQgOZVe1hIwsXm";
 const T = {
@@ -183,6 +184,7 @@ const T = {
   grp:{id:"tblgq9AuVkPiP3Sfg", name:"flddU1UkDigpxUb4C", disc:"fldDD6JXnuhO2NySM", min:"fldcMde45LBRTZltx"},
   cli:{id:"tblRpgqpDdeuscyVZ", company:"fldJBNgfbJR1MhG9p", inn:"fldJgTuVEf7AkqtjG", city:"fldvWWJj3G2JwSE6w", contact:"fld91jd7DgD2ni3Of", email:"fldzMfWAu0FlJsCe7", phone:"fldlp39UtoHsIIt2i", access:"fldsjtHOYHeQ3W1z2", group:"fldcL04Rs7IAUGSZE"},
   ord:{id:"tblMNpw0BBjoCVqSR", num:"fldds6c0SzpmpHdnR", date:"fldvsyzhAlwA4sqks", status:"fldMvk5Qx4DIBNpBd", comment:"fldCULT7c5x8wBuVo", client:"fldiGVjmdZRQWX6wE", lines:"fldt33LgK8IenWCmk", total:"fldwKpI8ggCeh70D9"},
+  user:{id:"tblC7P6ECGHUjNOV6", login:"fldxxQ2TI82jKlEx4", pass:"fldwjYgp7JpYrP3l7", client:"fldNszV5nWOSVuXdk", active:"fldPZNK15kX7A7FfM"},
   line:{id:"tbloOj0cv4gLXTTOV", title:"fldUIPqRFjoLGz9t5", qty:"fld2b7t1FEJ8QoZQY", price:"fldWI4xhpcGWcWCJx", order:"fld54aZZUEmVAPQiT", product:"fldbdz5MkczxtFebM", sum:"fldxGZvcL6UaF9JEM"}
 };
 const ORDER_STATUS = {"Новый":"info","Подтверждён":"info","Собирается":"warn","Отгружен":"warn","Доставлен":"ok","Отменён":"muted"};
@@ -201,7 +203,7 @@ function toast(msg){const t=document.createElement("div");t.className="toast";t.
 
 /* ---------- Airtable REST API, ключ хранится только в браузере ---------- */
 const KEY_STORE = "hadat_b2b_airtable_key";
-let KEY = store.get(KEY_STORE) || "";
+let KEY = (window.HADAT_DEMO_KEY || "").trim() || store.get(KEY_STORE) || "";
 function errText(e){
   switch(e?.code){
     case "no_key": return "Введите ключ доступа к тестовой базе.";
@@ -331,18 +333,35 @@ function renderLogin(mode){
     };
     return;
   }
-  app.innerHTML = `<div class="login">
+  app.innerHTML = `<form class="login" id="loginForm">
     <div class="mark">HADAT</div>
     <div class="eyebrow" style="text-align:center">Портал для партнёров</div>
-    <div class="field"><label for="clientSel">Демо-вход: выберите клиента</label>
-      <select id="clientSel">${ok.map(c => `<option value="${c.id}">${esc(c.company)} · ${esc(st.groups[c.group]?.name || "без группы")}</option>`).join("")}</select>
-    </div>
-    <button class="btn" id="enter" type="button" ${ok.length ? "" : "disabled"}>Войти</button>
-    <p class="note" style="margin:0;text-align:center">В рабочей версии здесь будет вход по email и паролю. Список клиентов берётся из таблицы «Клиенты».</p>
-    ${pend.length ? `<p class="note" style="margin:0;text-align:center">Ждут одобрения: ${pend.map(c => esc(c.company)).join(", ")}</p>` : ""}
+    <div class="field"><label for="u_login">Логин</label><input id="u_login" type="email" autocomplete="username" required placeholder="salon@test.example"></div>
+    <div class="field"><label for="u_pass">Пароль</label><input id="u_pass" type="password" autocomplete="current-password" required></div>
+    <div class="banner bad" id="loginErr" hidden><p></p></div>
+    <button class="btn" id="enter" type="submit">Войти</button>
+    <p class="note" style="margin:0;text-align:center">Тестовый вход: salon@test.example / demo-salon<br>или distr@test.example / demo-distr</p>
     <button class="link" id="toApply" type="button">Нет доступа? Оставить заявку</button>
-  </div>`;
-  $("#enter").onclick = () => login(st.clients.find(c => c.id === $("#clientSel").value));
+  </form>`;
+  $("#loginForm").onsubmit = async ev => {
+    ev.preventDefault();
+    const b = $("#enter"), err = $("#loginErr");
+    b.disabled = true; b.textContent = "Проверяем…"; err.hidden = true;
+    try {
+      const U = T.user;
+      const users = await listAll(U.id, [U.login, U.pass, U.client, U.active]);
+      const lg = $("#u_login").value.trim().toLowerCase(), pw = $("#u_pass").value;
+      const u = users.find(r => String(r.f[U.login]||"").trim().toLowerCase() === lg && String(r.f[U.pass]||"") === pw);
+      const c = u && st.clients.find(x => x.id === ids(u.f[U.client])[0]);
+      if (!u) throw {msg:"Неверный логин или пароль."};
+      if (!u.f[U.active]) throw {msg:"Учётная запись отключена. Обратитесь к менеджеру Hadat."};
+      if (!c || c.access !== "Одобрен") throw {msg:"Доступ компании ещё не одобрен."};
+      login(c);
+    } catch(e){
+      b.disabled = false; b.textContent = "Войти";
+      err.querySelector("p").textContent = e.msg || errText(e); err.hidden = false;
+    }
+  };
   $("#toApply").onclick = () => renderLogin("apply");
 }
 function login(c){
