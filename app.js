@@ -212,9 +212,9 @@ function authLayout({hero, body, after = ""}){
     <header class="auth-head">
       <img class="logo-main" src="assets/logo-main.svg" alt="HADAT Cosmetics">
     </header>
-    <img class="auth-products" src="assets/hero-products.jpg" alt="">
     <div class="auth-body">
       <div class="auth-pitch">
+        <img class="auth-products" src="assets/hero-products.jpg" alt="">
         <h1 class="h-display">Кабинет партнёра</h1>
         <p class="desc">Для салонов, мастеров и дистрибьюторов</p>
         <ul class="benefits">
