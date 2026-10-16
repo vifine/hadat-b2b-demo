@@ -212,14 +212,15 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .vrow:first-of-type{border-top:0}
 .vrow.incart::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--lb300)}
 .vrow.off .pr b,.vrow.off .vol b{color:var(--muted)}
-.thumb{width:56px;height:64px;object-fit:cover;transform:scale(1.2);mix-blend-mode:multiply}
+.thumb{width:56px;height:64px;overflow:hidden;position:relative;display:block;flex:none}
+.thumb img{position:absolute;left:50%;top:50%;width:110px;height:110px;max-width:none;object-fit:contain;mix-blend-mode:multiply;transform:translate(-50%,-56%)}
 .thumb-ph{width:56px;height:56px;background:var(--subtle);border-radius:4px}
 .vol b{font-weight:600;font-size:14px;margin-right:6px}
 .vol .sku{font-size:12px;color:var(--muted)}
 .vol .incart-b{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;background:var(--lb300);font-size:11px;font-weight:600;margin-left:6px;vertical-align:2px}
 .pr b{font-size:16px;font-weight:600}
 .pr small{font-size:12px;color:var(--text-2)}
-.pr .sub{font-size:12px;color:var(--text-2)}
+.pr .sub{font-size:12px;color:var(--text-2);white-space:nowrap}
 .pr .tip{position:relative;display:none;vertical-align:-3px;margin-left:4px;color:var(--text-2)}
 .pr .tip .ico{width:16px;height:16px}
 .pill{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:500;white-space:nowrap}
@@ -263,6 +264,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
   .pcard-h h3{width:100%;font-size:14px}
   .vrow{grid-template-columns:72px minmax(0,1fr) 140px;padding:10px 12px 10px 0;column-gap:10px}
   .vrow .thumb,.vrow .thumb-ph{width:72px;height:88px}
+  .vrow .thumb img{width:150px;height:150px}
   .pr .sub{display:none}
   .pr small{display:none}
   .pr .tip{display:inline-block}
@@ -281,7 +283,8 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .tbl-h span:nth-child(2){text-align:center}
 .cline{display:grid;grid-template-columns:48px minmax(0,1fr) 150px 110px 28px;gap:16px;align-items:center;padding:6px 12px;border-top:1px solid var(--border-2)}
 .cline:first-of-type{border-top:0}
-.cline .thumb{width:48px;height:48px}
+.cline .thumb{width:48px;height:56px}
+.cline .thumb img{width:96px;height:96px}
 .cline .nm{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cline .sk{font-size:12px;color:var(--muted)}
 .cline .sk b{color:var(--text);font-weight:600}
@@ -313,6 +316,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
   .cline{grid-template-columns:72px minmax(0,1fr) 28px;grid-template-areas:"img nm rm" "img st s";row-gap:8px;padding:10px 0}
   .cline>.im{grid-area:img;align-self:stretch}.cline>.tx{grid-area:nm}.cline>.stw{grid-area:st}.cline>.s{grid-area:s}.cline>.rm{grid-area:rm;align-self:start}
   .cline .thumb{width:72px;height:100%;min-height:80px}
+  .cline .thumb img{width:140px;height:140px}
   .cline .nm{white-space:normal}
   .cline>.s{grid-column:2/4;justify-self:end}
 }
@@ -331,8 +335,9 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .orow .no b{display:block;font-weight:600;font-size:14px}
 .orow .no span,.orow .pay{font-size:12px;color:var(--text-2)}
 .orow .stt{display:grid;gap:4px;justify-items:start}
-.thumbs{display:flex;align-items:flex-end;gap:4px;height:56px}
-.thumbs img{height:56px;width:34px;object-fit:cover;transform:scale(1.25);transform-origin:center 60%;mix-blend-mode:multiply}
+.thumbs{display:flex;align-items:flex-end;gap:2px;height:56px}
+.thumbs .tm{width:34px;height:56px;overflow:hidden;position:relative;flex:none}
+.thumbs .tm img{position:absolute;left:50%;top:50%;width:96px;height:96px;max-width:none;object-fit:contain;mix-blend-mode:multiply;transform:translate(-50%,-56%)}
 .thumbs .more{font-size:11px;font-weight:600;background:var(--subtle);border-radius:4px;padding:2px 6px;align-self:center}
 .orow .cnt{font-size:12px;color:var(--text-2);margin-top:2px}
 .orow .sum{text-align:right;font-weight:600;white-space:nowrap}
@@ -361,6 +366,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .oline{display:grid;grid-template-columns:32px minmax(0,1fr) 150px 110px;gap:12px;align-items:center;padding:6px 16px;border-top:1px solid var(--border-2)}
 .oline:first-of-type{border-top:0}
 .oline .thumb{width:36px;height:48px}
+.oline .thumb img{width:82px;height:82px}
 .oline .nm{font-weight:600}
 .oline .nm span{font-weight:400;font-size:12px;color:var(--muted);margin-left:8px}
 .oline .q{text-align:right;color:var(--text-2);font-size:13px}

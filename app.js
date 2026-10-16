@@ -488,7 +488,7 @@ function renderCatalog(){
 function vrowHtml(p){
   const q = st.cart[p.id] || 0, off = p.stock <= 0;
   return `<div class="vrow${q ? " incart" : ""}${off ? " off" : ""}" data-row="${p.id}">
-    <div class="im">${p.img ? `<img class="thumb" src="${esc(p.img)}" alt="" loading="lazy">` : `<div class="thumb-ph"></div>`}</div>
+    <div class="im">${p.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : `<div class="thumb-ph"></div>`}</div>
     <div class="vol"><b class="num">${esc(p.vol)}</b><span class="sku num">${esc(p.sku)}</span>${q ? `<span class="incart-b">✓ в корзине</span>` : ""}</div>
     <div class="pr num"><b>${money(priceOf(p))}</b> <small>с НДС</small><button type="button" class="tip" data-tip="${p.id}" aria-label="Подробнее о цене">${ico("info")}</button>
       <div class="sub">${money(netOf(p))} без НДС · РРЦ ${money(p.rrp)}</div></div>
@@ -590,7 +590,7 @@ function renderCart(){
 }
 function clineHtml(p, q){
   return `<div class="cline">
-    <div class="im">${p.img ? `<img class="thumb" src="${esc(p.img)}" alt="" loading="lazy">` : `<div class="thumb-ph"></div>`}</div>
+    <div class="im">${p.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : `<div class="thumb-ph"></div>`}</div>
     <div class="tx"><div class="nm">${esc(p.base)}, ${esc(p.vol)}</div><div class="sk num">${esc(p.sku)} · <b>${money(priceOf(p))}</b> за шт.</div></div>
     <div class="stw">${stepper(p, q, "k")}</div>
     <div class="s num">${money(priceOf(p) * q)}</div>
@@ -650,7 +650,7 @@ const S = o => STATUS[o.status] || STATUS["Новый"];
 const prodOf = id => st.products.find(p => p.id === id);
 function thumbsHtml(o, max = 6){
   const imgs = o.lines.map(l => prodOf(l.pid)?.img).filter(Boolean);
-  return `<div class="thumbs">${imgs.slice(0, max).map(u => `<img src="${esc(u)}" alt="" loading="lazy">`).join("")}${imgs.length > max ? `<span class="more">+${imgs.length - max}</span>` : ""}</div>`;
+  return `<div class="thumbs">${imgs.slice(0, max).map(u => `<span class="tm"><img src="${esc(u)}" alt="" loading="lazy"></span>`).join("")}${imgs.length > max ? `<span class="more">+${imgs.length - max}</span>` : ""}</div>`;
 }
 const units = o => o.lines.reduce((s, l) => s + l.qty, 0);
 async function renderOrders(){
@@ -735,7 +735,7 @@ async function renderOrder(id){
     <div class="tbl otable">
       <div class="tbl-h"><span class="num">${o.lines.length} ${plural(o.lines.length, "позиция", "позиции", "позиций")} · ${units(o)} ед.</span><span style="text-align:right">Количество × цена</span><span>Сумма</span></div>
       ${o.lines.map(l => { const p = prodOf(l.pid); return `<div class="oline">
-        <div class="im">${p?.img ? `<img class="thumb" src="${esc(p.img)}" alt="" loading="lazy">` : ""}</div>
+        <div class="im">${p?.img ? `<span class="thumb"><img src="${esc(p.img)}" alt="" loading="lazy"></span>` : ""}</div>
         <div class="nm">${p ? `${esc(p.base)}, ${esc(p.vol)}` : esc(l.title)}<span class="num">${esc(p?.sku || "")}</span></div>
         <div class="q num">${l.qty} × ${money(l.price)}</div>
         <div class="s num">${money(l.sum)}</div></div>` }).join("") || `<div class="oline"><div></div><div class="hint">Позиции не найдены</div></div>`}
