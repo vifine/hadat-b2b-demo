@@ -35,7 +35,7 @@ const P = {
   address:'<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
   media:'<rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15.5L16 11l-9 9"/>',
   help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.5"/>',
-  logout:'<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 7l-5 5 5 5M5 12h11"/>',
+  logout:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M14 7l5 5-5 5M19 12H8"/>',
   menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
   collapse:'<path d="M15 6l-6 6 6 6"/>',
   expand:'<path d="M9 6l6 6-6 6"/>',
@@ -43,6 +43,8 @@ const P = {
   search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5V8"/>',
   trash:'<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5.5M14 11v5.5"/>',
+  bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   down:'<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>'
 };
@@ -405,6 +407,8 @@ function shell(active, crumbs, html, opts = {}){
         <nav class="crumbs" aria-label="Навигация">${crumbs.map((x, i) => i < crumbs.length - 1 ? `<a href="${x[1]}">${esc(x[0])}</a><span>/</span>` : `<b>${esc(x[0])}</b>`).join("")}</nav>
         ${showCat ? `<a class="tb-link" href="#/catalog">${ico("catalog")}<span class="t">Каталог</span></a>` : ""}
         ${showCart ? `<a class="tb-link" href="#/cart">${ico("cart")}<span class="t">Корзина</span>${n ? `<span class="count num">${n}</span><span class="tb-sum num">${money(cartTotal())}</span>` : ""}</a>` : ""}
+        <div class="ntf-wrap"><button class="ntf-btn" id="ntfBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Уведомления">${ico("bell")}${unreadCount() ? `<span class="ntf-dot" aria-hidden="true"></span>` : ""}</button>
+          <div class="ntf-pop" id="ntfPop" role="dialog" aria-label="Уведомления" hidden></div></div>
         <div class="who-wrap"><button class="who" id="who" type="button" aria-haspopup="menu" aria-expanded="false"><span class="n"><b>${esc(c.company)}</b><span>№ ${esc(clientNo())} · ${esc(c.contact || "")}</span></span><span class="avatar">${esc(initials(c.contact || c.company))}</span></button>
           <div class="who-menu" id="whoMenu" role="menu" hidden>
             <div class="wm-head"><b>${esc(c.company)}</b><span>${esc(c.contact || "")}${c.email ? " · " + esc(c.email) : ""}</span><span>${esc(grp().name)} · скидка ${Math.round(grp().disc * 100)}%</span></div>
@@ -417,11 +421,40 @@ function shell(active, crumbs, html, opts = {}){
   </div>`;
   $("#burger").onclick = () => $("#shell").classList.add("menu-open");
   $("#closeMenu").onclick = closeMenu; $("#scrim").onclick = closeMenu;
+  $("#ntfBtn").onclick = e => { e.stopPropagation(); const pop = $("#ntfPop"); if (!pop.hidden){ pop.hidden = true; return } drawNtf(); pop.hidden = false; $("#ntfBtn").setAttribute("aria-expanded","true");
+    setTimeout(() => document.addEventListener("click", function h(ev){ if (!pop.contains(ev.target)){ pop.hidden = true; $("#ntfBtn")?.setAttribute("aria-expanded","false"); document.removeEventListener("click", h) } }), 0) };
   const doLogout = e => { e.preventDefault(); st.client = null; store.set("hadat_b2b_client", null); go("#/login") };
   $("#logout").onclick = doLogout; $("#whoLogout").onclick = doLogout;
   $("#who").onclick = e => { e.stopPropagation(); const m = $("#whoMenu"); m.hidden = !m.hidden; $("#who").setAttribute("aria-expanded", !m.hidden);
     if (!m.hidden) setTimeout(() => document.addEventListener("click", function h(ev){ if (!m.contains(ev.target)){ m.hidden = true; $("#who")?.setAttribute("aria-expanded","false"); document.removeEventListener("click", h) } }), 0) };
   if (!opts.keepScroll) window.scrollTo({top:0});
+}
+/* ---------- уведомления (демо, фиктивные) ---------- */
+const NTF = [
+  {id:"n5", kind:"ship", title:"Заказ отгружен", text:"HD-002470 передан в службу доставки. Трек-номер появится в карточке заказа.", time:"Сегодня, 10:24", num:2470},
+  {id:"n4", kind:"ok", title:"Заказ подтверждён", text:"HD-002476 подтверждён менеджером. Счёт на оплату готов.", time:"Вчера, 17:05", num:2476},
+  {id:"n3", kind:"new", title:"Новинки в каталоге", text:"Линия Detox Therapy: шампунь, скраб, пилинг и тоник для кожи головы.", time:"14 октября", href:"#/catalog", filter:{line:"Detox Therapy"}},
+  {id:"n2", kind:"done", title:"Заказ доставлен", text:"HD-002455 доставлен. Спасибо за заказ!", time:"14 октября", num:2455},
+  {id:"n1", kind:"off", title:"Заказ отменён", text:"HD-002398 отменён по вашей просьбе. Резерв снят.", time:"8 сентября", num:2398}
+];
+const NTF_IC = {ship:"shipments", ok:"orders", new:"catalog", done:"orders", off:"close"};
+const readSet = () => new Set(store.get("hadat_ntf_read_" + (st.client?.id || "")) || []);
+const unreadCount = () => { const r = readSet(); return NTF.filter(n => !r.has(n.id)).length };
+function markRead(ids){ const r = readSet(); ids.forEach(i => r.add(i)); store.set("hadat_ntf_read_" + st.client.id, [...r]); if (!unreadCount()) document.querySelector(".ntf-dot")?.remove() }
+function drawNtf(){
+  const r = readSet(), pop = $("#ntfPop");
+  pop.innerHTML = `<div class="ntf-h"><b>Уведомления</b>${unreadCount() ? `<button type="button" id="ntfAll">Прочитать все</button>` : ""}</div>
+    <div class="ntf-list">${NTF.map(n => `<button type="button" class="ntf-i k-${n.kind}${r.has(n.id) ? "" : " unread"}" data-ntf="${n.id}">
+      <span class="ntf-ic">${ico(NTF_IC[n.kind])}</span>
+      <span class="ntf-t"><b>${esc(n.title)}</b><span>${esc(n.text)}</span><small>${esc(n.time)}</small></span></button>`).join("")}</div>`;
+  $("#ntfAll") && ($("#ntfAll").onclick = e => { e.stopPropagation(); markRead(NTF.map(n => n.id)); drawNtf() });
+  pop.querySelectorAll("[data-ntf]").forEach(b => b.onclick = async () => {
+    const n = NTF.find(x => x.id === b.dataset.ntf); markRead([n.id]); pop.hidden = true;
+    if (n.filter){ st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false, ...n.filter}; return go("#/catalog") }
+    try { await loadOrders() } catch(e){}
+    const o = (st.orders || []).find(x => x.num === n.num);
+    go(o ? "#/orders/" + o.id : "#/orders");
+  });
 }
 function closeMenu(){ const s = $("#shell"); if (s) s.classList.remove("menu-open") }
 function updateTopCart(){
@@ -437,9 +470,9 @@ function renderHome(){
     <div class="page-head"><h1 class="h-display">Здравствуйте, ${esc((st.client.contact || "").split(" ")[0] || "партнёр")}</h1></div>
     <p style="margin:0 0 8px;color:var(--text-2)">${esc(st.client.company)} · ценовая группа «${esc(grp().name)}», скидка ${Math.round(grp().disc * 100)}% от РРЦ</p>
     <div class="home-grid">
-      <a class="tile" href="#/catalog"><span class="eyebrow">Каталог</span><b class="num">${new Set(st.products.map(p => p.base)).size} товаров</b><span>${st.products.length} вариаций · ${st.products.filter(p => p.stock > 0).length} в наличии</span></a>
-      <a class="tile" href="#/cart"><span class="eyebrow">Корзина</span><b class="num">${n ? money(cartTotal()) : "Пусто"}</b><span>${n ? `${L.length} ${plural(L.length, "позиция", "позиции", "позиций")} · ${n} ед.` : "Добавьте товары из каталога"}</span></a>
-      <a class="tile" href="#/orders"><span class="eyebrow">Заказы</span><b>История</b><span>Статусы, суммы и состав заказов</span></a>
+      <a class="tile" href="#/catalog"><span class="tile-ic">${ico("catalog")}</span><span class="tile-go">${ico("arrow")}</span><span class="eyebrow">Каталог</span><b class="num">${new Set(st.products.map(p => p.base)).size} товаров</b><span>${st.products.length} вариаций · ${st.products.filter(p => p.stock > 0).length} в наличии</span></a>
+      <a class="tile" href="#/cart"><span class="tile-ic">${ico("cart")}</span><span class="tile-go">${ico("arrow")}</span><span class="eyebrow">Корзина</span><b class="num">${n ? money(cartTotal()) : "Пусто"}</b><span>${n ? `${L.length} ${plural(L.length, "позиция", "позиции", "позиций")} · ${n} ед.` : "Добавьте товары из каталога"}</span></a>
+      <a class="tile" href="#/orders"><span class="tile-ic">${ico("orders")}</span><span class="tile-go">${ico("arrow")}</span><span class="eyebrow">Заказы</span><b>История</b><span>Статусы, суммы и состав заказов</span></a>
     </div>
     <section class="promos" aria-label="Новинки и линии" aria-roledescription="карусель">
       <div class="promos-track" id="promoTrack">${PROMOS.map((x, i) => `
