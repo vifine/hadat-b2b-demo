@@ -212,9 +212,9 @@ function authLayout({hero, body, after = ""}){
     <header class="auth-head">
       <img class="logo-main" src="assets/logo-main.svg" alt="HADAT Cosmetics">
     </header>
+    <img class="auth-products" src="assets/hero-products.png" alt="">
     <div class="auth-body">
       <div class="auth-pitch">
-        <img class="auth-products" src="assets/hero-products.jpg" alt="">
         <h1 class="h-display">Кабинет партнёра</h1>
         <p class="desc">Для салонов, мастеров и дистрибьюторов</p>
         <ul class="benefits">
@@ -306,16 +306,16 @@ function renderApply(){
       <div class="eyebrow">Стать партнёром</div>
       <h2 class="h-display">Заявка на доступ</h2>
       <p class="lead">Расскажите о вашем бизнесе. Менеджер обсудит условия сотрудничества и поможет получить доступ.</p>
-      <div class="field"><label for="a_company">Название компании / салона *</label><input class="input" id="a_company" required></div>
-      <div class="grid2">
+      <div class="grid3">
+        <div class="field span2"><label for="a_company">Название компании / салона *</label><input class="input" id="a_company" required></div>
+        <div class="field"><label for="a_type">Тип бизнеса *</label><select class="input" id="a_type" required><option>Салон красоты</option><option>Частный мастер</option><option>Дистрибьютор</option><option>Магазин / сеть</option></select></div>
         <div class="field"><label for="a_contact">Контактное лицо *</label><input class="input" id="a_contact" required autocomplete="name"></div>
         <div class="field"><label for="a_phone">Телефон *</label><input class="input" id="a_phone" type="tel" required autocomplete="tel"></div>
         <div class="field"><label for="a_email">Рабочий email *</label><input class="input" id="a_email" type="email" required autocomplete="email"></div>
         <div class="field"><label for="a_city">Город *</label><input class="input" id="a_city" required></div>
-        <div class="field"><label for="a_type">Тип бизнеса *</label><select class="input" id="a_type" required><option>Салон красоты</option><option>Частный мастер</option><option>Дистрибьютор</option><option>Магазин / сеть</option></select></div>
         <div class="field"><label for="a_inn">ИНН · необязательно</label><input class="input" id="a_inn" inputmode="numeric" pattern="\\d{10}|\\d{12}"></div>
+        <div class="field"><label for="a_comment">Комментарий</label><input class="input" id="a_comment"></div>
       </div>
-      <div class="field"><label for="a_comment">Комментарий</label><textarea class="input" id="a_comment" rows="2"></textarea></div>
       <label class="check"><input type="checkbox" id="a_agree" required checked> Согласна на обработку персональных данных</label>
       <p class="demo-note">Это демо: заявка запишется в тестовую базу. Не указывайте реальные данные.</p>
       <div class="grid2">
