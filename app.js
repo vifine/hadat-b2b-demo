@@ -515,12 +515,19 @@ function drawCards(){
   if (!G.length){ box.innerHTML = `<div class="empty">${ico("search")}<h2 class="h-display">Ничего не найдено</h2><p>Измените поиск или сбросьте фильтры.</p><button class="btn btn-line" id="reset" type="button">Сбросить фильтры</button></div>`;
     $("#reset").onclick = () => { st.f = {...st.f, q:"", type:"", line:"", inStock:false}; renderCatalog() }; return }
   box.innerHTML = G.map(g => `<section class="pcard">
-    <div class="pcard-h"><h3>${esc(g.base)}</h3><span class="ty">${esc(g.type)}</span><span class="ln">${esc(g.line)}</span></div>
+    <div class="pcard-h"><h3>${esc(g.base)}</h3><span class="ptot num" data-ptot="${esc(g.base)}">${ptotHtml(g.base)}</span></div>
     ${g.vs.map(vrowHtml).join("")}</section>`).join("");
   bindSteppers(box, "c", p => refreshRow(p));
   box.querySelectorAll("[data-tip]").forEach(b => b.onclick = e => { e.stopPropagation(); showTip(b, st.products.find(x => x.id === b.dataset.tip)) });
 }
+function ptotHtml(base){
+  const L = cartLines().filter(x => x.p.base === base);
+  if (!L.length) return "";
+  const q = L.reduce((s, x) => s + x.q, 0), sum = L.reduce((s, x) => s + priceOf(x.p) * x.q, 0);
+  return `<span>${q} шт.</span><b>${money(sum)}</b>`;
+}
 function refreshRow(p){
+  const pt = [...document.querySelectorAll("[data-ptot]")].find(x => x.dataset.ptot === p.base); if (pt) pt.innerHTML = ptotHtml(p.base);
   const old = document.querySelector(`[data-row="${p.id}"]`); if (!old) return;
   const t = document.createElement("div"); t.innerHTML = vrowHtml(p); const nw = t.firstElementChild;
   old.replaceWith(nw);
