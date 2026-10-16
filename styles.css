@@ -212,7 +212,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .vrow:first-of-type{border-top:0}
 .vrow.incart::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--lb300)}
 .vrow.off .pr b,.vrow.off .vol b{color:var(--muted)}
-.thumb{width:56px;height:56px;object-fit:contain;mix-blend-mode:multiply}
+.thumb{width:56px;height:64px;object-fit:cover;transform:scale(1.2);mix-blend-mode:multiply}
 .thumb-ph{width:56px;height:56px;background:var(--subtle);border-radius:4px}
 .vol b{font-weight:600;font-size:14px;margin-right:6px}
 .vol .sku{font-size:12px;color:var(--muted)}
@@ -331,8 +331,8 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .orow .no b{display:block;font-weight:600;font-size:14px}
 .orow .no span,.orow .pay{font-size:12px;color:var(--text-2)}
 .orow .stt{display:grid;gap:4px;justify-items:start}
-.thumbs{display:flex;align-items:flex-end;gap:6px;height:36px}
-.thumbs img{height:36px;width:24px;object-fit:contain;mix-blend-mode:multiply}
+.thumbs{display:flex;align-items:flex-end;gap:4px;height:56px}
+.thumbs img{height:56px;width:34px;object-fit:cover;transform:scale(1.25);transform-origin:center 60%;mix-blend-mode:multiply}
 .thumbs .more{font-size:11px;font-weight:600;background:var(--subtle);border-radius:4px;padding:2px 6px;align-self:center}
 .orow .cnt{font-size:12px;color:var(--text-2);margin-top:2px}
 .orow .sum{text-align:right;font-weight:600;white-space:nowrap}
@@ -360,7 +360,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .otable .tbl-h{grid-template-columns:minmax(0,1fr) 150px 110px}
 .oline{display:grid;grid-template-columns:32px minmax(0,1fr) 150px 110px;gap:12px;align-items:center;padding:6px 16px;border-top:1px solid var(--border-2)}
 .oline:first-of-type{border-top:0}
-.oline .thumb{width:32px;height:40px}
+.oline .thumb{width:36px;height:48px}
 .oline .nm{font-weight:600}
 .oline .nm span{font-weight:400;font-size:12px;color:var(--muted);margin-left:8px}
 .oline .q{text-align:right;color:var(--text-2);font-size:13px}
