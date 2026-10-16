@@ -551,7 +551,10 @@ button.im{display:block}
 @media (min-width:861px){.content{padding-right:104px}}
 .chat-fab{position:fixed;right:24px;bottom:24px;z-index:45;display:flex;flex-direction:column;align-items:center;gap:10px}
 .chat-btn{width:56px;height:56px;border-radius:50%;background:var(--brown);color:var(--beige-photo);display:grid;place-items:center;box-shadow:0 8px 24px rgba(48,37,38,.28)}
-.chat-btn:hover{background:#302526}
+.chat-btn:hover{background:#302526;animation:none}
+.chat-btn.bounce{animation:chat-bounce .8s cubic-bezier(.36,.07,.19,.97) 1}
+@keyframes chat-bounce{0%{transform:translateY(0) scale(1)}15%{transform:translateY(-14px) scale(1.05)}30%{transform:translateY(0) scale(.97)}45%{transform:translateY(-8px) scale(1.02)}60%,100%{transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.chat-btn.bounce{animation:none}}
 .chat-btn .ico{width:28px;height:28px}
 .chat-btn .ico .fill{fill:var(--beige-photo);stroke:none}
 .chat-btn .ico .dot{fill:var(--brown);stroke:none}

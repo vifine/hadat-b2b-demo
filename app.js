@@ -428,6 +428,9 @@ function shell(active, crumbs, html, opts = {}){
   $("#closeMenu").onclick = closeMenu; $("#scrim").onclick = closeMenu;
   $("#ntfBtn").onclick = e => { e.stopPropagation(); const pop = $("#ntfPop"); if (!pop.hidden){ pop.hidden = true; return } drawNtf(); pop.hidden = false; $("#ntfBtn").setAttribute("aria-expanded","true");
     setTimeout(() => document.addEventListener("click", function h(ev){ if (!pop.contains(ev.target)){ pop.hidden = true; $("#ntfBtn")?.setAttribute("aria-expanded","false"); document.removeEventListener("click", h) } }), 0) };
+  const bounce = () => { const b = $("#chatBtn"); if (!b || !$("#chatList").hidden) return; b.classList.remove("bounce"); void b.offsetWidth; b.classList.add("bounce") };
+  clearTimeout(window._cbT); clearInterval(window._cbI);
+  window._cbT = setTimeout(() => { bounce(); window._cbI = setInterval(bounce, 10000) }, 3000);
   $("#chatBtn").onclick = e => { e.stopPropagation(); const l = $("#chatList"); l.hidden = !l.hidden; $("#chatBtn").setAttribute("aria-expanded", !l.hidden); $("#chatBtn").innerHTML = ico(l.hidden ? "chat" : "close");
     if (!l.hidden) setTimeout(() => document.addEventListener("click", function h(ev){ if (!$("#chatFab")?.contains(ev.target)){ l.hidden = true; $("#chatBtn") && ($("#chatBtn").innerHTML = ico("chat")); document.removeEventListener("click", h) } }), 0) };
   const doLogout = e => { e.preventDefault(); st.client = null; store.set("hadat_b2b_client", null); go("#/login") };
