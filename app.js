@@ -430,13 +430,19 @@ function updateTopCart(){
 function renderHome(){
   const L = cartLines(), n = L.reduce((s, x) => s + x.q, 0);
   shell("home", [["Главная"]], `
-    <section class="promo" aria-label="Новинка">
-      <div class="promo-txt">
-        <span class="promo-eyebrow">Новинка${newCount() ? ` · ещё ${newCount()} ${plural(newCount(), "новинка", "новинки", "новинок")} в каталоге` : ""}</span>
-        <h2 class="h-display">Hair Discipline<br>Style Primer 5-in-1</h2>
-        <p>Праймер для укладки: укрощает пушистость, даёт эластичную фиксацию, защищает от нагрева до 180&nbsp;°C, добавляет блеск и ухаживает. 130 мл.</p>
-        <div class="promo-cta"><a class="btn promo-btn" href="#/catalog" id="toNew">Смотреть новинки</a><span class="promo-soon">Праймер — скоро в каталоге</span></div>
+    <section class="promos" aria-label="Новинки и линии" aria-roledescription="карусель">
+      <div class="promos-track" id="promoTrack">${PROMOS.map((x, i) => `
+        <article class="promo-card" style="--pc:${x.bg}" aria-label="${i + 1} из ${PROMOS.length}">
+          <div class="promo-img"><img src="${x.img}" alt="${esc(x.alt)}" loading="${i ? "lazy" : "eager"}"></div>
+          <div class="promo-txt">
+            <span class="promo-eyebrow">${esc(x.eyebrow)}</span>
+            <h2 class="h-display">${esc(x.title)}</h2>
+            <p>${esc(x.text)}</p>
+            <div class="promo-cta"><a class="btn promo-btn" href="#/catalog" data-promo="${i}">${esc(x.cta)}</a>${x.note ? `<span class="promo-soon">${esc(x.note)}</span>` : ""}</div>
+          </div>
+        </article>`).join("")}
       </div>
+      <div class="promo-dots" id="promoDots">${PROMOS.map((x, i) => `<button type="button" aria-label="Баннер ${i + 1}" data-dot="${i}"></button>`).join("")}</div>
     </section>
     <div class="page-head"><h1 class="h-display">Здравствуйте, ${esc((st.client.contact || "").split(" ")[0] || "партнёр")}</h1></div>
     <p style="margin:0 0 8px;color:var(--text-2)">${esc(st.client.company)} · ценовая группа «${esc(grp().name)}», скидка ${Math.round(grp().disc * 100)}% от РРЦ</p>
@@ -445,7 +451,35 @@ function renderHome(){
       <a class="tile" href="#/cart"><span class="eyebrow">Корзина</span><b class="num">${n ? money(cartTotal()) : "Пусто"}</b><span>${n ? `${L.length} ${plural(L.length, "позиция", "позиции", "позиций")} · ${n} ед.` : "Добавьте товары из каталога"}</span></a>
       <a class="tile" href="#/orders"><span class="eyebrow">Заказы</span><b>История</b><span>Статусы, суммы и состав заказов</span></a>
     </div>`);
-  $("#toNew").onclick = e => { e.preventDefault(); st.f = {...st.f, q:"", type:"", line:"", isNew:true}; go("#/catalog") };
+  document.querySelectorAll("[data-promo]").forEach(a => a.onclick = e => { e.preventDefault(); const x = PROMOS[+a.dataset.promo]; st.f = {...st.f, q:"", type:"", line:"", inStock:false, isNew:false, ...x.filter}; go("#/catalog") });
+  initPromoSlider();
+}
+const PROMOS = [
+  {img:"assets/promo-primer.jpg", alt:"Hair Discipline Style Primer 5-in-1", bg:"#7b5b63", eyebrow:"Новинка · стайлинг", title:"Style Primer 5-in-1", text:"Праймер для укладки: термозащита до 180 °C, контроль пушистости, эластичная фиксация, блеск и уход.", cta:"Смотреть новинки", note:"Праймер — скоро в каталоге", filter:{isNew:true}},
+  {img:"assets/promo-detox.jpg", alt:"Линия Detox Therapy", bg:"#2f3b31", eyebrow:"Новая линия · кожа головы", title:"Detox Therapy", text:"Глубокое очищение и баланс кожи головы: шампунь, скраб, пилинг и тоник.", cta:"Смотреть линию", filter:{line:"Detox Therapy"}},
+  {img:"assets/promo-calm.jpg", alt:"Уход за телом Calm", bg:"#3b2e27", eyebrow:"Уход за телом", title:"Calm Body Care", text:"Очищение, увлажнение и комфорт кожи тела и рук с премиальной ароматикой.", cta:"Смотреть уход за телом", filter:{line:"Body"}}
+];
+let promoTimer = null;
+function initPromoSlider(){
+  clearInterval(promoTimer);
+  const tr = $("#promoTrack"), dots = [...document.querySelectorAll("[data-dot]")];
+  if (!tr) return;
+  const cards = [...tr.children];
+  const cur = () => Math.round(tr.scrollLeft / (cards[0].offsetWidth || 1));
+  const mark = () => dots.forEach((d, i) => d.setAttribute("aria-current", i === cur()));
+  const goTo = i => tr.scrollTo({left: cards[i % cards.length].offsetLeft - tr.offsetLeft, behavior: "smooth"});
+  dots.forEach(d => d.onclick = () => goTo(+d.dataset.dot));
+  tr.onscroll = () => mark(); mark();
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let paused = false;
+  tr.onpointerdown = tr.onmouseenter = () => paused = true;
+  tr.onmouseleave = () => paused = false;
+  tr.ontouchend = () => setTimeout(() => paused = false, 4000);
+  promoTimer = setInterval(() => {
+    if (!document.body.contains(tr)) return clearInterval(promoTimer);
+    if (paused || reduce || tr.scrollWidth <= tr.clientWidth + 4) return;
+    goTo(cur() + 1);
+  }, 5000);
 }
 function newCount(){ return new Set(st.products.filter(p => p.status === "Новинка").map(p => p.base)).size }
 function renderStub(n){
