@@ -30,7 +30,7 @@ const P = {
   cart:'<path d="M2.5 3h2.6l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 7H6"/><circle cx="9.5" cy="19.5" r="1.5"/><circle cx="17.5" cy="19.5" r="1.5"/>',
   orders:'<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h4"/>',
   shipments:'<path d="M13 16V6H2v10h11zm0 0h8v-3.5L17.5 9H13v7z"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
-  claims:'<path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 6 16.5"/><path d="M12 8v4.5M12 15.5v.5"/>',
+  claims:'<circle cx="12" cy="12" r="9"/><path d="M8.5 16.5c.9-1.3 2.1-2 3.5-2s2.6.7 3.5 2"/><path d="M9 9.5v.5M15 9.5v.5"/>',
   users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.2A6.5 6.5 0 0 1 21.5 20"/>',
   address:'<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
   media:'<rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15.5L16 11l-9 9"/>',
