@@ -1074,7 +1074,7 @@ function formDialog(title, body, ok, onOk, wide){
   document.addEventListener("keydown", onKey);
   d.onclick = e => { if (e.target === d) close() };
   d.querySelectorAll("[data-x]").forEach(b => b.onclick = close);
-  d.querySelector("form").onsubmit = e => { e.preventDefault(); close(); (onOk || (() => toast(DEMO_NOTE)))() };
+  d.querySelector("form").onsubmit = e => { e.preventDefault(); (onOk || (() => toast(DEMO_NOTE)))(); close() };
   setTimeout(() => d.querySelector("input,select,textarea")?.focus(), 30);
   return d;
 }
@@ -1118,12 +1118,48 @@ function renderClaims(){
 }
 
 /* ---------- пользователи ---------- */
+const API_SCOPES = [["stock", "Остатки", "чтение"], ["prices", "Цены партнёра", "чтение"], ["catalog", "Каталог и характеристики", "чтение"], ["orders", "Создание заказов", "запись"], ["status", "Статусы заказов и отгрузок", "чтение"]];
+const API_SYSTEMS = ["1С", "МойСклад", "Битрикс24", "Собственная разработка", "Другое"];
+function apiReqDialog(){
+  formDialog("Запрос API-ключа", `
+    <p class="hint dlg-lead">Ключ выдаётся после ручной проверки менеджером Hadat — обычно в течение 1–2 рабочих дней. О решении придёт письмо на технический email.</p>
+    <div class="grid2">
+      <div class="field"><label for="ak_name">Название интеграции</label><input class="input" id="ak_name" placeholder="Например, синхронизация с 1С" required></div>
+      <div class="field"><label for="ak_sys">Система</label><select class="input" id="ak_sys">${API_SYSTEMS.map(x => `<option>${esc(x)}</option>`).join("")}</select></div>
+    </div>
+    <fieldset class="scopes"><legend>Какие данные нужны</legend>
+      ${API_SCOPES.map(([k, t, m], i) => `<label class="check"><input type="checkbox" name="ak_sc" value="${k}" ${i < 2 ? "checked" : ""}><span>${esc(t)} <small>${m}</small></span></label>`).join("")}
+    </fieldset>
+    <div class="grid2">
+      <div class="field"><label for="ak_who">Технический контакт</label><input class="input" id="ak_who" placeholder="Имя разработчика" required></div>
+      <div class="field"><label for="ak_mail">Email для ключа</label><input class="input" id="ak_mail" type="email" placeholder="dev@company.ru" required></div>
+    </div>
+    <div class="field"><label for="ak_ip">IP-адреса сервера · необязательно</label><input class="input" id="ak_ip" placeholder="Через запятую — запросы будут приниматься только с них"></div>
+    <div class="field"><label for="ak_cm">Задача интеграции</label><textarea class="input" id="ak_cm" rows="2" placeholder="Что и как часто будет синхронизироваться"></textarea></div>
+    <label class="check"><input type="checkbox" required checked> Обязуюсь хранить ключ в секрете и не передавать третьим лицам</label>`,
+    "Отправить на согласование", () => {
+      const sc = [...document.querySelectorAll('[name="ak_sc"]:checked')].map(x => API_SCOPES.find(s => s[0] === x.value)[1]);
+      (st.apiReqs ||= []).unshift({name:$("#ak_name").value.trim() || "Интеграция", sys:$("#ak_sys").value, scopes:sc, mail:$("#ak_mail").value.trim(), date:new Date().toISOString()});
+      toast("Заявка отправлена менеджеру (демо)"); renderUsers();
+    }, true);
+}
+function apiReqsHtml(){
+  const R = [...(st.apiReqs || []), {name:"Выгрузка заказов в МойСклад", sys:"МойСклад", scopes:["Создание заказов", "Статусы заказов и отгрузок"], mail:"dev@distr-test.example", date:"2026-10-14", st:"rev"}];
+  return `<section class="api-reqs"><h2 class="eyebrow">Заявки на API-доступ</h2>
+    ${R.map(r => `<div class="api-req">
+      <div class="ar-main"><b>${esc(r.name)}</b><span>${esc(r.sys)} · ${esc(r.scopes.join(", ") || "—")}</span><span class="num">Ключ будет отправлен на ${esc(r.mail)} · заявка от ${dateShort(r.date)}</span></div>
+      <ol class="ar-steps"><li class="done">Заявка отправлена</li><li class="cur">Проверка менеджером</li><li>Ключ выдан</li></ol>
+      <span class="pill rev">На согласовании</span></div>`).join("")}
+  </section>`;
+}
 function renderUsers(){
   shell("users", [["Главная", "#/home"], ["Пользователи"]], `
-    <div class="page-head"><h1 class="h-display">Пользователи</h1><button class="btn btn-green" id="invite" type="button">${ico("plus")} Пригласить</button></div>
+    <div class="page-head"><h1 class="h-display">Пользователи</h1>
+      <button class="btn btn-line" id="apiReq" type="button">${ico("plus")} Запросить API-ключ</button>
+      <button class="btn btn-green" id="invite" type="button">${ico("plus")} Пригласить</button></div>
     <div class="u-types">
-      <div><span class="tag user">Пользователь</span><p>Работает в кабинете через браузер: каталог, заказы, рекламации.</p></div>
-      <div><span class="tag api">API</span><p>Доступ по ключу для интеграции с учётной системой: остатки, цены, заказы.</p></div>
+      <div><span class="tag user">Пользователь</span><p>Работает в кабинете через браузер: каталог, заказы, рекламации. Приглашение приходит сразу.</p></div>
+      <div><span class="tag api">API</span><p>Доступ по ключу для интеграции с учётной системой. Выдаётся после ручного одобрения менеджером.</p></div>
     </div>
     <div class="mtbl users">
       <div class="mtbl-h"><span>Сотрудник</span><span>Тип доступа</span><span>Статус</span><span>Последний вход</span><span></span></div>
@@ -1131,15 +1167,16 @@ function renderUsers(){
         <div class="u-t"><span class="tag ${u.api ? "api" : "user"}">${u.api ? "API" : "Пользователь"}</span></div>
         <div class="u-s"><span class="pill ${u.st === "Активен" ? "ok" : "wait"}">${u.st}</span></div>
         <div class="u-l num">${esc(u.last)}</div>
-        <div class="u-a">${u.owner ? "" : `<button type="button" class="link-btn" data-demo>${u.st === "Приглашён" ? "Отправить ещё раз" : "Изменить"}</button>`}</div></div>`).join("")}
-    </div>${mockFoot}`);
+        <div class="u-a">${u.owner ? "" : `<button type="button" class="link-btn" data-demo>${u.st === "Приглашён" ? "Отправить ещё раз" : u.api ? "Перевыпустить ключ" : "Изменить"}</button>`}</div></div>`).join("")}
+    </div>
+    ${apiReqsHtml()}${mockFoot}`);
   $("#invite").onclick = () => formDialog("Пригласить пользователя", `
     <div class="field"><label for="i_name">Имя и фамилия</label><input class="input" id="i_name" required></div>
     <div class="field"><label for="i_mail">Рабочий email</label><input class="input" id="i_mail" type="email" required></div>
-    <fieldset class="radio-cards"><legend>Тип доступа</legend>
-      <label><input type="radio" name="i_t" checked><span><b>Пользователь</b><small>Вход в кабинет через браузер</small></span></label>
-      <label><input type="radio" name="i_t"><span><b>API</b><small>Ключ для интеграции с учётной системой</small></span></label>
-    </fieldset>`, "Отправить приглашение", () => toast("Приглашение отправлено (демо)"));
+    <p class="hint">Сотрудник получит письмо со ссылкой для входа в кабинет. Нужен доступ для интеграции? <button type="button" class="link-btn inline" id="toApi">Запросите API-ключ</button></p>`,
+    "Отправить приглашение", () => toast("Приглашение отправлено (демо)"));
+  document.addEventListener("click", function h(e){ if (e.target.id === "toApi"){ document.removeEventListener("click", h); document.querySelector(".dialog-bg")?.remove(); document.body.style.overflow = ""; apiReqDialog() } });
+  $("#apiReq").onclick = apiReqDialog;
   document.querySelectorAll("[data-demo]").forEach(b => b.onclick = () => toast(DEMO_NOTE));
 }
 
