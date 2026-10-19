@@ -1212,13 +1212,14 @@ function renderAddresses(){
 }
 function addrSelectHtml(){
   return `<div class="field"><label for="addrSel">Адрес доставки</label><select class="input" id="addrSel">
-    ${ADDRS.map((a, i) => `<option value="${i}" ${a.main ? "selected" : ""}>${esc(a.name)} — ${esc(a.city)}, ${esc(a.addr)}</option>`).join("")}
+    ${ADDRS.map((a, i) => `<option value="${i}" ${a.main ? "selected" : ""}>${esc(a.name)}, ${esc(a.city)}</option>`).join("")}
     <option value="new">+ Новый адрес…</option></select>
+    <span class="hint" id="addrFull">${esc(ADDRS.find(x => x.main)?.addr || "")}</span>
     <div id="addrNew" class="addr-new" hidden>
       <input class="input" placeholder="Город" aria-label="Город"><input class="input" placeholder="Улица, дом, офис" aria-label="Адрес">
       <span class="hint">Адрес сохранится для следующих заказов.</span></div></div>`;
 }
-function bindAddrSelect(){ const s = $("#addrSel"); if (s) s.onchange = () => { $("#addrNew").hidden = s.value !== "new" } }
+function bindAddrSelect(){ const s = $("#addrSel"); if (s) s.onchange = () => { $("#addrNew").hidden = s.value !== "new"; $("#addrFull").textContent = s.value === "new" ? "" : ADDRS[+s.value].addr } }
 
 /* ---------- медиа ---------- */
 function renderMedia(){
