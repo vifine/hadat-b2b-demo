@@ -165,7 +165,14 @@ html:has(.auth),body:has(.auth){background:#BFAEA1}
 /* по умолчанию меню свёрнуто, раскрывается при наведении поверх контента */
 @media (min-width:861px){
   .shell{grid-template-columns:72px minmax(0,1fr);transition:grid-template-columns .2s ease}
-  .shell:has(.side:hover),.shell:has(.side:focus-within){grid-template-columns:264px minmax(0,1fr)}
+  .shell:has(.side:hover),.shell:has(.side:focus-within),.shell.pinned{grid-template-columns:264px minmax(0,1fr)}
+  .shell.pinned .side-top .logo-b2b{display:block}.shell.pinned .side-top .logo-sq{display:none}
+  .shell.pinned .nav a span{opacity:1}
+  .side-top .pin-btn{display:none;margin-left:auto;opacity:.55}
+  .side:hover .side-top .pin-btn,.side:focus-within .side-top .pin-btn,.shell.pinned .side-top .pin-btn{display:grid}
+  .side-top .pin-btn:hover{opacity:1}
+  .side-top .pin-btn[aria-pressed="true"]{opacity:1;background:rgba(48,37,38,.16)}
+  .side-top .pin-btn[aria-pressed="true"] .ico{fill:currentColor}
   .side{width:100%}
   .side-top{padding:0 18px;justify-content:flex-start}
   .side-top .logo-b2b{display:none}
@@ -758,3 +765,5 @@ select.input{max-width:100%;min-width:0;text-overflow:ellipsis}
 .totals,.cart-layout>*{min-width:0}
 .totals{grid-template-columns:minmax(0,1fr)}
 .shell{overflow-x:clip}
+
+@media (max-width:860px){.side-top .pin-btn{display:none!important}}

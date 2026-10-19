@@ -48,6 +48,7 @@ const P = {
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  pin:'<path d="M9 4h6l-1 5 3 3v2H7v-2l3-3-1-5z"/><path d="M12 14v6"/>',
   down:'<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>'
 };
 const ico = (n, cls = "ico") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
@@ -439,11 +440,12 @@ function shell(active, crumbs, html, opts = {}){
   const c = st.client;
   const showCat = active !== "catalog", showCart = active !== "cart";
   root.innerHTML = `
-  <div class="shell" id="shell">
+  <div class="shell${store.get("hadat_side_pinned") ? " pinned" : ""}" id="shell">
     <aside class="side" aria-label="Меню">
       <div class="side-top">
         <a href="#/home" aria-label="На главную"><img class="logo-b2b" src="assets/logo-b2b.svg" alt="HADAT B2B-портал"><img class="logo-sq" src="assets/favicon.svg" alt="HADAT"></a>
         <div class="side-acc"><span class="avatar">${esc(initials(c.contact || c.company))}</span><span class="n"><b>${esc(c.company)}</b><span>№ ${esc(clientNo())} · ${esc(c.contact || "")}</span><span>${esc(grp().name)} · скидка ${Math.round(grp().disc * 100)}%</span></span></div>
+        <button class="pin-btn" id="pinMenu" type="button" aria-pressed="${!!store.get("hadat_side_pinned")}" title="${store.get("hadat_side_pinned") ? "Открепить меню" : "Закрепить меню"}" aria-label="Закрепить меню">${ico("pin")}</button>
         <button class="close-btn" id="closeMenu" type="button" aria-label="Закрыть меню">${ico("close")}</button>
       </div>
       <nav class="nav">${NAV.filter(i => !i.hidden).map(i => `<a href="#/${i.k}" ${i.k === active ? 'aria-current="page"' : ""} title="${i.t}">${ico(i.i)}<span>${i.t}</span></a>`).join("")}</nav>
@@ -474,6 +476,7 @@ function shell(active, crumbs, html, opts = {}){
     </div>
   </div>`;
   $("#burger").onclick = () => $("#shell").classList.add("menu-open");
+  $("#pinMenu").onclick = () => { const on = !$("#shell").classList.contains("pinned"); store.set("hadat_side_pinned", on); $("#shell").classList.toggle("pinned", on); const b = $("#pinMenu"); b.setAttribute("aria-pressed", on); b.title = on ? "Открепить меню" : "Закрепить меню"; b.blur() };
   $("#closeMenu").onclick = closeMenu; $("#scrim").onclick = closeMenu;
   $("#ntfBtn").onclick = e => { e.stopPropagation(); const pop = $("#ntfPop"); if (!pop.hidden){ pop.hidden = true; return } drawNtf(); pop.hidden = false; $("#ntfBtn").setAttribute("aria-expanded","true");
     setTimeout(() => document.addEventListener("click", function h(ev){ if (!pop.contains(ev.target)){ pop.hidden = true; $("#ntfBtn")?.setAttribute("aria-expanded","false"); document.removeEventListener("click", h) } }), 0) };
