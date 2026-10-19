@@ -132,7 +132,9 @@ async function create(tableId, records){
 }
 
 /* ---------- загрузка ---------- */
-const BOOT_CACHE = "hadat_b2b_boot_v1";
+// Фото товаров лежат в репозитории: ссылки Airtable на вложения временные и протухают через несколько часов
+const LOCAL_IMG = new Set(["112500", "112501", "112502", "112503", "112506", "112507", "112510", "112511", "112512", "112513", "112516", "112519", "112523", "112524", "112525", "112526", "112527", "112528", "112529", "112530", "112537", "112538", "112539", "112540", "112543", "112544", "112545", "112546", "112547", "112548", "112549", "112550", "112551", "112552", "112553", "112554", "112555", "112556", "112557", "112558", "112559", "112560", "112561", "150002", "150003", "179000", "202401", "202402", "202403", "202404", "202405", "202406", "202407", "202408", "632187"]);
+const BOOT_CACHE = "hadat_b2b_boot_v2";
 let bootP = Promise.resolve();
 async function fetchBoot(){
   const [p, g, c] = await Promise.all([
@@ -153,7 +155,7 @@ function applyBoot({p, g, c}, first){
       line:title(r.f[F.line]), type:cap(String(r.f[F.type] || "").trim()), vol:volRu(r.f[F.vol]),
       volNum:parseFloat(r.f[F.vol]) || 0,
       rrp:+r.f[F.rrp] || 0, status:sel(r.f[F.status]), stock:+r.f[F.stock] || 0,
-      img:ph?.thumbnails?.large?.url || ph?.url || ""
+      img:LOCAL_IMG.has(String(r.f[F.sku] || "")) ? `assets/products/${r.f[F.sku]}.webp` : (ph?.thumbnails?.large?.url || ph?.url || "")
     };
   }).filter(x => x.name && x.rrp);
   st.groups = {};
